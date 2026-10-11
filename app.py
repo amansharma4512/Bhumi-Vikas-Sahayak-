@@ -1,7 +1,10 @@
 import os
 import sys
 import json
+import io
 import streamlit as st
+import streamlit.components.v1 as components
+from gtts import gTTS
 
 # Setup path
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -323,67 +326,152 @@ elif feature.startswith("📢"):
 # -------------------------------------------------------------
 # FEATURE 5: VOICE-BASED HINDI ASSISTANT
 # -------------------------------------------------------------
+# -------------------------------------------------------------
+# FEATURE 5: VOICE-BASED HINDI ASSISTANT
+# -------------------------------------------------------------
 elif feature.startswith("🎙️"):
-    st.subheader("🎙️ Voice-Based Hindi Assistant (आवाज सहायक)")
-    st.caption("Clerks and citizens speak questions in Hindi and receive spoken answers with verified rule citations.")
+    st.subheader("🎙️ Voice-Based Hindi Assistant (आवाज सहायक - हिंदी एवं अंग्रेजी)")
+    st.caption("Clerks and citizens can speak their questions in Hindi and receive spoken answers with verified rule citations.")
 
-    # Voice input component using HTML5 Speech Recognition & Synthesis
-    st.markdown("""
-    <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #cbd5e1; text-align: center;">
-        <button id="micBtn" onclick="startDictation()" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 50px; font-size: 1.1rem; cursor: pointer; font-weight: 600;">
-            🎙️ बोलकर प्रश्न पूछें (Click to Speak Hindi)
+    st.markdown("#### 1️⃣ माइक से बोलकर प्रश्न पूछें (Speak Hindi Question):")
+
+    # Speech Recognition HTML Component
+    mic_html = """
+    <div style="background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); padding: 22px; border-radius: 12px; border: 1px solid #cbd5e1; text-align: center; font-family: sans-serif;">
+        <button id="micBtn" onclick="toggleRecognition()" style="background: #dc2626; color: white; border: none; padding: 14px 28px; border-radius: 50px; font-size: 1.15rem; cursor: pointer; font-weight: 700; box-shadow: 0 4px 6px rgba(220,38,38,0.3); transition: all 0.2s;">
+            🎙️ माइक चालू करें (Click to Speak)
         </button>
-        <p id="transcriptText" style="margin-top: 14px; font-weight: 500; color: #1e293b;">माइक बटन दबाएं और हिंदी में अपना प्रश्न बोलें...</p>
+        <div id="statusIndicator" style="margin-top: 14px; font-weight: 600; color: #475569; font-size: 1rem;">
+            माइक बटन दबाएं और हिंदी या अंग्रेजी में अपना सवाल बोलें...
+        </div>
+        <div id="transcriptBox" style="margin-top: 12px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; min-height: 50px; font-size: 1.05rem; color: #1e293b; text-align: left;">
+            (आपकी बोली हुई बात यहाँ दिखाई देगी...)
+        </div>
+        <div style="margin-top: 10px;">
+            <button onclick="copyToClipboard()" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer;">
+                📋 टेक्स्ट कॉपी करें (Copy Question)
+            </button>
+        </div>
     </div>
 
     <script>
-    function startDictation() {
-        if (window.hasOwnProperty('webkitSpeechRecognition')) {
-            var recognition = new webkitSpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = "hi-IN";
-            recognition.start();
+    var recognition = null;
+    var isListening = false;
 
-            document.getElementById('micBtn').innerText = "🔴 सुन रहा हूँ... (Listening)";
-            recognition.onresult = function(e) {
-                var spoken = e.results[0][0].transcript;
-                document.getElementById('transcriptText').innerText = "आपने कहा: " + spoken;
-                document.getElementById('micBtn').innerText = "🎙️ फिर से बोलें (Speak Again)";
-                // Speak response back
-                var msg = new SpeechSynthesisUtterance("आपका प्रश्न दर्ज किया गया है: " + spoken);
-                msg.lang = 'hi-IN';
-                window.speechSynthesis.speak(msg);
-            };
-            recognition.onerror = function(e) {
-                recognition.stop();
-                document.getElementById('micBtn').innerText = "🎙️ बोलकर प्रश्न पूछें";
-            };
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRec();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'hi-IN';
+
+        recognition.onstart = function() {
+            isListening = true;
+            document.getElementById('micBtn').style.background = '#16a34a';
+            document.getElementById('micBtn').innerText = '🔴 सुन रहा हूँ... (Listening)';
+            document.getElementById('statusIndicator').innerText = 'आवाज रिकॉर्ड हो रही है, कृपया अपना प्रश्न बोलें...';
+        };
+
+        recognition.onresult = function(event) {
+            var finalTranscript = '';
+            for (var i = event.resultIndex; i < event.results.length; ++i) {
+                finalTranscript += event.results[i][0].transcript;
+            }
+            document.getElementById('transcriptBox').innerText = finalTranscript;
+        };
+
+        recognition.onerror = function(event) {
+            isListening = false;
+            document.getElementById('micBtn').style.background = '#dc2626';
+            document.getElementById('micBtn').innerText = '🎙️ माइक चालू करें (Click to Speak)';
+            document.getElementById('statusIndicator').innerText = 'माइक्रोफोन एरर: ' + event.error + ' (कृपया माइक्रोफोन परमिशन चेक करें)';
+        };
+
+        recognition.onend = function() {
+            isListening = false;
+            document.getElementById('micBtn').style.background = '#dc2626';
+            document.getElementById('micBtn').innerText = '🎙️ फिर से बोलें (Click to Speak Again)';
+            document.getElementById('statusIndicator').innerText = 'रिकॉर्डिंग समाप्त! नीचे दिए गए बॉक्स में प्रश्न पेस्ट/टाइप करके उत्तर सुनें।';
+        };
+    } else {
+        document.getElementById('statusIndicator').innerText = 'नोट: यह ब्राउज़र वेब स्पीच को सपोर्ट नहीं करता। कृपया Google Chrome या Edge का उपयोग करें।';
+    }
+
+    function toggleRecognition() {
+        if (!recognition) {
+            alert('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
+            return;
+        }
+        if (isListening) {
+            recognition.stop();
         } else {
-            alert("Speech recognition not supported in this browser. Please use Google Chrome or Edge.");
+            recognition.start();
+        }
+    }
+
+    function copyToClipboard() {
+        var text = document.getElementById('transcriptBox').innerText;
+        if (text && text.indexOf('(आपकी') === -1) {
+            navigator.clipboard.writeText(text);
+            alert('प्रश्न कॉपी हो गया! अब नीचे इनपुट बॉक्स में पेस्ट कर सकते हैं।');
+        } else {
+            alert('पहले माइक बटन दबाकर कुछ बोलें!');
         }
     }
     </script>
-    """, unsafe_allow_html=True)
+    """
+    components.html(mic_html, height=230)
 
-    v_query = st.text_input("Spoken / Typed Hindi Question (या यहाँ टाइप करें):", value="15 मीटर सड़क पर 300 वर्ग मीटर आवासीय प्लॉट के लिए सामने कितना खुला स्थान छोड़ना होगा?")
-    if st.button("🔊 Answer & Read Aloud (उत्तर सुनें)", type="primary"):
-        with st.spinner("उत्तर तैयार किया जा रहा है..."):
-            ans = answer_question(v_query)
-        st.success(f"**उत्तर**: {ans['answer']}")
-        if ans.get("citations"):
-            for cit in ans["citations"]:
-                st.info(f"📜 **{cit['rule_number']}** ({cit['page_range']}): \"{cit['exact_quote']}\"")
+    st.markdown("#### 2️⃣ प्रश्न की पुष्टि करें या टाइप करें (Verify/Type Question):")
 
-        # Read aloud in Hindi using Web Speech
-        clean_speech = ans['answer'].replace('"', '\\"').replace('\n', ' ')
-        st.markdown(f"""
-        <script>
-            var msg = new SpeechSynthesisUtterance("{clean_speech}");
-            msg.lang = "hi-IN";
-            window.speechSynthesis.speak(msg);
-        </script>
-        """, unsafe_allow_html=True)
+    # Quick voice sample buttons
+    col_v1, col_v2, col_v3 = st.columns(3)
+    with col_v1:
+        if st.button("🗣️ उदाहरण 1: 15m सड़क पर 300 वर्ग मीटर"):
+            st.session_state["v_query_input"] = "15 मीटर चौड़ी सड़क पर 300 वर्ग मीटर के आवासीय प्लॉट के लिए सामने कितना खुला स्थान छोड़ना होगा?"
+    with col_v2:
+        if st.button("🗣️ उदाहरण 2: फार्म हाउस FAR व ऊंचाई"):
+            st.session_state["v_query_input"] = "कृषि क्षेत्र में फार्म हाउस के लिए न्यूनतम भूखंड और अधिकतम FAR कितना अनुमत है?"
+    with col_v3:
+        if st.button("🗣️ उदाहरण 3: 250 sqm दुकान की फीस"):
+            st.session_state["v_query_input"] = "250 वर्ग मीटर बिल्ट-अप एरिया की दुकान के लिए अनुमति शुल्क कितना देय होगा?"
+
+    default_v = st.session_state.get("v_query_input", "15 मीटर चौड़ी सड़क पर 300 वर्ग मीटर के आवासीय प्लॉट के लिए सामने कितना खुला स्थान छोड़ना होगा?")
+    v_query = st.text_input("Question for Voice Assistant:", value=default_v)
+
+    if st.button("🔊 Answer & Read Aloud in Hindi (उत्तर निकालें व सुनें)", type="primary"):
+        if v_query.strip():
+            with st.spinner("उत्तर खोजा जा रहा है और आवाज तैयार हो रही है..."):
+                ans = answer_question(v_query)
+
+            st.success(f"### 📢 उत्तर (Response):")
+            st.write(ans['answer'])
+
+            # Generate and Play Native Audio via gTTS
+            try:
+                tts_lang = "hi" if ans["language"] == "hi" else "en"
+                tts = gTTS(text=ans['answer'], lang=tts_lang)
+                audio_buffer = io.BytesIO()
+                tts.write_to_fp(audio_buffer)
+                audio_bytes = audio_buffer.getvalue()
+
+                st.markdown("#### 🎧 ऑडियो सुनें (Listen Spoken Audio):")
+                st.audio(audio_bytes, format="audio/mp3", autoplay=True)
+            except Exception as e:
+                st.info("Browser Web Speech Playback fallback:")
+                clean_speech = ans['answer'].replace('"', '\\"').replace('\n', ' ')
+                components.html(f"""
+                <script>
+                    var msg = new SpeechSynthesisUtterance("{clean_speech}");
+                    msg.lang = "{'hi-IN' if ans['language'] == 'hi' else 'en-US'}";
+                    window.speechSynthesis.speak(msg);
+                </script>
+                """, height=0)
+
+            if ans.get("citations"):
+                st.markdown("#### 📜 आधिकारिक नियम (Verified Citations):")
+                for cit in ans["citations"]:
+                    st.info(f"**{cit['rule_number']}** ({cit['page_range']}): \"{cit['exact_quote']}\"")
 
 # -------------------------------------------------------------
 # FEATURE 6: RULE COMPARISON DASHBOARD
