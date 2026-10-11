@@ -1,0 +1,17 @@
+{
+  "amendment_date": "2026-08-28",
+  "rule_id": "2(5)(c)",
+  "source_url": "https://teamleaseregtech.com/updates/article/59469/government-of-madhya-pradesh-amendment-to-land-development-rules",
+  "description": "Government of Madhya Pradesh Amendment to Land Development Rules regarding deemed building permissions and authority jurisdiction for plots up to 500 sq m.",
+  "trigger_conditions": {
+    "max_plot_size_sqm": 500.0,
+    "rules": [
+      "2(5)(c)",
+      "2",
+      "12",
+      "12-A"
+    ]
+  },
+  "warning_en": "IMPORTANT NOTICE: Rule 2(5)(c) regarding plots up to 500 sq m was amended by the State Government on 28 August 2026. This amendment is not included in the consolidated March 2025 rulebook. Please confirm specific provisions from the 28 Aug 2026 notification before making a final determination.",
+  "warning_hi": "महत्वपूर्ण सूचना: 500 वर्ग मीटर तक के भूखंडों के लिए नियम 2(5)(c) में राज्य सरकार द्वारा 28 अगस्त 2026 को संशोधन किया गया है। यह संशोधन 6 मार्च 2025 तक समेकित नियमावली में शामिल नहीं है। अंतिम निर्णय लेने से पहले 28 अगस्त 2026 की अधिसूचना से पुष्टि अवश्य करें।"
+}
