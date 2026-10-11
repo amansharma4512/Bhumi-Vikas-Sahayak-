@@ -201,44 +201,6 @@ def get_theme_css(theme: str = "light") -> str:
             }
         </style>
         """
-            .verified-badge {
-                background-color: #dcfce7 !important;
-                color: #166534 !important;
-                font-size: 0.75rem;
-                font-weight: 700;
-                padding: 3px 9px;
-                border-radius: 9999px;
-                display: inline-block;
-                margin-bottom: 6px;
-            }
-            .disclaimer-box {
-                background-color: #f1f5f9 !important;
-                border: 1px dashed #cbd5e1 !important;
-                padding: 14px;
-                border-radius: 10px;
-                color: #475569 !important;
-                font-size: 0.85rem;
-                margin-top: 24px;
-            }
-            .user-badge {
-                background-color: #f8fafc;
-                border: 1px solid #e2e8f0;
-                padding: 12px 14px;
-                border-radius: 10px;
-                margin-bottom: 15px;
-            }
-            .version-tag {
-                background-color: #fef08a !important;
-                color: #854d0e !important;
-                padding: 4px 10px;
-                border-radius: 6px;
-                font-size: 0.82rem;
-                font-weight: 600;
-                display: inline-block;
-                margin-top: 8px;
-            }
-        </style>
-        """
 
 
 I18N = {
