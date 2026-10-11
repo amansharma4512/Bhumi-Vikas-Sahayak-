@@ -18,11 +18,16 @@ from src.calculators import calculate_comprehensive_building_plan
 from src.checker import check_building_plan
 from src.tracker import get_all_amendments, get_comparison_tables
 from src.auth import (
+    authenticate_password,
     generate_otp,
     verify_otp,
     validate_destination,
     get_user_preferences,
-    save_user_preferences
+    save_user_preferences,
+    DEFAULT_TEST_ID,
+    DEFAULT_TEST_PASSWORD,
+    DEFAULT_TEST_PHONE,
+    DEFAULT_TEST_OTP
 )
 from src.theme import get_theme_css, get_strings
 
@@ -62,12 +67,12 @@ strings = get_strings(current_lang)
 st.markdown(get_theme_css(current_theme), unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# LOGIN PORTAL (Displayed when not logged in - Phone/Email OTP Only)
+# LOGIN PORTAL (Displayed when not logged in)
 # -------------------------------------------------------------
 if not st.session_state.get("auth_user"):
     # Header with Official Logo
     st.markdown(f"""
-    <div style="text-align: center; margin-bottom: 24px;">
+    <div style="text-align: center; margin-bottom: 20px;">
         <img src="data:image/jpeg;base64,{logo_b64}" width="135" style="border-radius: 50%; box-shadow: 0 4px 16px rgba(0,0,0,0.25); margin-bottom: 12px;" />
         <h1 style="margin:0; font-size: 2.2rem; color: #22c55e;">{strings['app_title']}</h1>
         <h3 style="margin:4px 0 0 0; font-weight: 500; opacity: 0.9;">मध्य प्रदेश शासन &bull; भोपाल नगर निगम</h3>
@@ -76,51 +81,86 @@ if not st.session_state.get("auth_user"):
     </div>
     """, unsafe_allow_html=True)
 
-    # Auth Card with clear choice between Phone and Email
+    # Test Credentials Box
+    st.markdown(f"""
+    <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid #16a34a; border-radius: 12px; padding: 14px 20px; max-width: 580px; margin: 0 auto 18px auto;">
+        <div style="font-weight: 700; color: #4ade80; font-size: 1rem; margin-bottom: 4px;">
+            🔑 टेस्ट लॉगिन क्रेडेंशियल्स (Test Credentials):
+        </div>
+        <div style="font-size: 0.92rem; line-height: 1.6;">
+            • <b>User ID / ईमेल:</b> <code>{DEFAULT_TEST_ID}</code> &nbsp;(या फोन: <code>{DEFAULT_TEST_PHONE}</code>)<br>
+            • <b>पासवर्ड (Password):</b> <code>{DEFAULT_TEST_PASSWORD}</code><br>
+            • <b>OTP कोड (यदि OTP से जाएं):</b> <code>{DEFAULT_TEST_OTP}</code>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Auth Card with 2 Login Options
     st.markdown('<div class="auth-card" style="max-width: 580px; margin: 0 auto;">', unsafe_allow_html=True)
-    st.markdown(f"### 🔐 {strings['otp_title']}")
-    st.caption(strings['login_sub'])
 
-    login_type = st.radio(
-        strings["choose_method"],
-        [strings["phone_opt"], strings["email_opt"]],
-        horizontal=True,
-        key="login_type_choice"
-    )
+    login_tab1, login_tab2 = st.tabs([
+        "🔑 आईडी व पासवर्ड लॉगिन (ID & Password)",
+        "📱 फोन / ईमेल OTP लॉगिन (OTP Login)"
+    ])
 
-    is_phone_login = strings["phone_opt"] in login_type
+    with login_tab1:
+        st.markdown("##### यूजर आईडी और पासवर्ड द्वारा प्रवेश करें:")
+        with st.form("pwd_login_box"):
+            login_id_in = st.text_input("यूजर आईडी / ईमेल / फोन:", value=DEFAULT_TEST_ID)
+            login_pwd_in = st.text_input("पासवर्ड (Password):", type="password", value=DEFAULT_TEST_PASSWORD)
+            btn_pwd = st.form_submit_button("🔐 लॉगिन करें (Login)", type="primary", use_container_width=True)
 
-    if is_phone_login:
-        login_val = st.text_input(strings["enter_phone"], placeholder="उदा. 9876543210", key="phone_input_field")
-    else:
-        login_val = st.text_input(strings["enter_email"], placeholder="उदा. officer@bhopal.gov.in", key="email_input_field")
+            if btn_pwd:
+                ok, user_data, msg = authenticate_password(login_id_in, login_pwd_in)
+                if ok:
+                    st.session_state["auth_user"] = user_data
+                    st.session_state["user_prefs"] = get_user_preferences(user_data["user_id"])
+                    st.toast("लॉगिन सफल!")
+                    st.rerun()
+                else:
+                    st.error(msg)
 
-    if st.button(strings["send_otp"], type="secondary", use_container_width=True):
-        is_valid, norm_val, err_msg = validate_destination("phone" if is_phone_login else "email", login_val)
-        if is_valid:
-            otp, msg = generate_otp(norm_val, "phone" if is_phone_login else "email")
-            st.session_state["active_dest"] = norm_val
-            st.session_state["last_otp"] = otp
-            st.session_state["otp_sent"] = True
-            st.toast("OTP Sent Successfully!")
+    with login_tab2:
+        st.markdown(f"##### {strings['otp_title']}:")
+        login_type = st.radio(
+            strings["choose_method"],
+            [strings["phone_opt"], strings["email_opt"]],
+            horizontal=True,
+            key="login_type_choice"
+        )
+        is_phone_login = strings["phone_opt"] in login_type
+
+        if is_phone_login:
+            login_val = st.text_input(strings["enter_phone"], value=DEFAULT_TEST_PHONE, key="phone_input_field")
         else:
-            st.error(err_msg)
+            login_val = st.text_input(strings["enter_email"], value=DEFAULT_TEST_ID, key="email_input_field")
 
-    if st.session_state.get("otp_sent"):
-        st.info(f"📲 **[BMC Gateway Notification]**: सत्यापन कोड (OTP) भेजा गया: `{st.session_state.get('last_otp')}` (परीक्षण हेतु: `123456`)")
-
-        entered_otp = st.text_input(strings["enter_otp"], max_chars=6, key="otp_code_field")
-
-        if st.button(strings["verify_login"], type="primary", use_container_width=True):
-            dest = st.session_state.get("active_dest", login_val.strip())
-            ok, user, msg = verify_otp(dest, entered_otp)
-            if ok:
-                st.session_state["auth_user"] = user
-                st.session_state["user_prefs"] = get_user_preferences(user["user_id"])
-                st.toast("लॉगिन सफल!")
-                st.rerun()
+        if st.button(strings["send_otp"], type="secondary", use_container_width=True):
+            is_valid, norm_val, err_msg = validate_destination("phone" if is_phone_login else "email", login_val)
+            if is_valid:
+                otp, msg = generate_otp(norm_val, "phone" if is_phone_login else "email")
+                st.session_state["active_dest"] = norm_val
+                st.session_state["last_otp"] = otp
+                st.session_state["otp_sent"] = True
+                st.toast("OTP Sent Successfully!")
             else:
-                st.error(msg)
+                st.error(err_msg)
+
+        if st.session_state.get("otp_sent"):
+            st.info(f"📲 **[BMC Gateway Notification]**: सत्यापन कोड (OTP) भेजा गया: `{st.session_state.get('last_otp')}` (परीक्षण हेतु: `{DEFAULT_TEST_OTP}`)")
+
+            entered_otp = st.text_input(strings["enter_otp"], value=DEFAULT_TEST_OTP, max_chars=6, key="otp_code_field")
+
+            if st.button(strings["verify_login"], type="primary", use_container_width=True):
+                dest = st.session_state.get("active_dest", login_val.strip())
+                ok, user, msg = verify_otp(dest, entered_otp)
+                if ok:
+                    st.session_state["auth_user"] = user
+                    st.session_state["user_prefs"] = get_user_preferences(user["user_id"])
+                    st.toast("लॉगिन सफल!")
+                    st.rerun()
+                else:
+                    st.error(msg)
 
     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()

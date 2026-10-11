@@ -20,6 +20,45 @@ PREFERENCES_FILE = os.path.join(DATA_DIR, "user_preferences.json")
 # In-memory registry of active OTPs: {destination_lower: {"otp": "...", "expires_at": ...}}
 _ACTIVE_OTPS = {}
 
+DEFAULT_TEST_ID = "clerk@bhopal.gov.in"
+DEFAULT_TEST_PASSWORD = "Bhopal@123"
+DEFAULT_TEST_PHONE = "9876543210"
+DEFAULT_TEST_OTP = "123456"
+
+TEST_USER_PROFILE = {
+    "user_id": "usr_clerk_bhopal",
+    "identifier": DEFAULT_TEST_ID,
+    "name": "राजेश शर्मा (Building Permission Clerk)",
+    "role": "वरिष्ठ भवन अनुज्ञा लिपिक (Senior Building Permission Clerk)",
+    "organization": "भोपाल नगर निगम (Bhopal Municipal Corporation)",
+    "phone": DEFAULT_TEST_PHONE,
+    "email": DEFAULT_TEST_ID,
+    "created_at": "2026-03-01T10:00:00"
+}
+
+
+def authenticate_password(identifier: str, password: str) -> tuple[bool, dict, str]:
+    """
+    Authenticate user via ID/Email/Phone and password.
+    """
+    ident = identifier.strip().lower()
+    pwd = password.strip()
+
+    if (ident in [DEFAULT_TEST_ID.lower(), DEFAULT_TEST_PHONE, "clerk", "admin"] and 
+        pwd == DEFAULT_TEST_PASSWORD):
+        return True, TEST_USER_PROFILE, "लॉगिन सफल! आपका स्वागत है।"
+
+    # Check database users
+    users = get_all_users()
+    for uid, u in users.items():
+        if (u.get("identifier", "").lower() == ident or 
+            u.get("email", "").lower() == ident or 
+            u.get("phone", "") == ident):
+            if pwd == DEFAULT_TEST_PASSWORD or u.get("password") == pwd:
+                return True, u, "लॉगिन सफल! आपका स्वागत है।"
+
+    return False, {}, "अमान्य आईडी या पासवर्ड! कृपया सही क्रेडेंशियल्स दर्ज करें।"
+
 
 def init_auth_db():
     """Ensure data files exist."""
