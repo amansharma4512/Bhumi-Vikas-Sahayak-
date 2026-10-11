@@ -1,0 +1,597 @@
+{
+  "total": 17,
+  "passed": 17,
+  "failed": 0,
+  "accuracy_pct": 100.0,
+  "results": [
+    {
+      "id": "Q01",
+      "question": "My plot is 200 sq m on a 9 m road. How much front open space (FMOS) do I need to leave for a residential building?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "For a road width of 9.0 meters, the minimum Front Marginal Open Space (FMOS) required is 3.0 meters as per Rule 56(1)(a) Table Item 1.",
+        "rule_number": "56(1)(a)",
+        "citations": [
+          {
+            "rule_number": "Rule 56(1)(a) Table Item 1",
+            "page_range": "77",
+            "exact_quote": "Up to 9.0 meters 3.0 meters",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "plot_area_sqm": 200.0,
+          "road_width_m": 9.0,
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": "IMPORTANT NOTICE: Rule 2(5)(c) regarding plots up to 500 sq m was amended by the State Government on 28 August 2026. This amendment is not included in the consolidated March 2025 rulebook. Please confirm specific provisions from the 28 Aug 2026 notification before making a final determination.",
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q02",
+      "question": "15 मीटर चौड़ी सड़क पर 300 वर्ग मीटर के आवासीय प्लॉट के लिए सामने कितना खुला स्थान (Front MOS) छोड़ना होगा?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "hi",
+        "answer": "15.0 मीटर चौड़ी सड़क के लिए Rule 56(1)(a) Table Item 3 के तहत न्यूनतम फ्रंट मार्जिनल ओपन स्पेस (FMOS) 4.5 मीटर छोड़ना अनिवार्य है।",
+        "rule_number": "56(1)(a)",
+        "citations": [
+          {
+            "rule_number": "Rule 56(1)(a) Table Item 3",
+            "page_range": "77",
+            "exact_quote": "More than 12.0 meters and up to 18 meters 4.5 meters",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "plot_area_sqm": 300.0,
+          "road_width_m": 15.0,
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": "महत्वपूर्ण सूचना: 500 वर्ग मीटर तक के भूखंडों के लिए नियम 2(5)(c) में राज्य सरकार द्वारा 28 अगस्त 2026 को संशोधन किया गया है। यह संशोधन 6 मार्च 2025 तक समेकित नियमावली में शामिल नहीं है। अंतिम निर्णय लेने से पहले 28 अगस्त 2026 की अधिसूचना से पुष्टि अवश्य करें।",
+        "disclaimer": "अस्वीकरण: यह सहायक केवल संदर्भ और आधिकारिक नियमों के उद्धरण प्रदान करता है। यह औपचारिक कानूनी सलाह नहीं है; अंतिम भवन अनुज्ञा निर्णय सक्षम प्राधिकारी / भवन अधिकारी के विवेकाधीन है।"
+      }
+    },
+    {
+      "id": "Q03",
+      "question": "For a residential building up to 12.5 meters height on a plot area of 180 sq m, what is the required rear open space?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "For a residential plot of 180.0 sq m, the minimum Rear Open Space required is 2.5 meters under Rule 56(2)(a) Table Item 3.",
+        "rule_number": "56(2)(a)",
+        "citations": [
+          {
+            "rule_number": "Rule 56(2)(a) Table Item 3",
+            "page_range": "78",
+            "exact_quote": "Above 150 and up to 225.00 2.50",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "plot_area_sqm": 180.0,
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": "IMPORTANT NOTICE: Rule 2(5)(c) regarding plots up to 500 sq m was amended by the State Government on 28 August 2026. This amendment is not included in the consolidated March 2025 rulebook. Please confirm specific provisions from the 28 Aug 2026 notification before making a final determination.",
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q04",
+      "question": "What is the minimum rear open space required for a residential plot of 35 sq meters?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "For a residential plot of 35.0 sq m (up to 40.00 sq m), the minimum rear open space required is Nil (0.0 meters) under Rule 56(2)(a) Table Item 1.",
+        "rule_number": "56(2)(a)",
+        "citations": [
+          {
+            "rule_number": "Rule 56(2)(a) Table Item 1",
+            "page_range": "78",
+            "exact_quote": "Up to 40.00 Nil",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "plot_area_sqm": 35.0,
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": "IMPORTANT NOTICE: Rule 2(5)(c) regarding plots up to 500 sq m was amended by the State Government on 28 August 2026. This amendment is not included in the consolidated March 2025 rulebook. Please confirm specific provisions from the 28 Aug 2026 notification before making a final determination.",
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q05",
+      "question": "250 वर्ग मीटर के डिटैच्ड (एकल) आवासीय मकान के लिए दोनों तरफ कितना साइड ओपन स्पेस छोड़ना जरूरी है?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "hi",
+        "answer": "detached आवासीय मकान के लिए Rule 56(3)(i) के अनुसार दोनों तरफ न्यूनतम 3.0 मीटर साइड ओपन स्पेस आवश्यक है।",
+        "rule_number": "56(3)(i)",
+        "citations": [
+          {
+            "rule_number": "Rule 56(3)(i)",
+            "page_range": "78",
+            "exact_quote": "For detached buildings there shall be minimum side open spaces of 3 meters on both the sides",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "plot_area_sqm": 250.0,
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": "महत्वपूर्ण सूचना: 500 वर्ग मीटर तक के भूखंडों के लिए नियम 2(5)(c) में राज्य सरकार द्वारा 28 अगस्त 2026 को संशोधन किया गया है। यह संशोधन 6 मार्च 2025 तक समेकित नियमावली में शामिल नहीं है। अंतिम निर्णय लेने से पहले 28 अगस्त 2026 की अधिसूचना से पुष्टि अवश्य करें।",
+        "disclaimer": "अस्वीकरण: यह सहायक केवल संदर्भ और आधिकारिक नियमों के उद्धरण प्रदान करता है। यह औपचारिक कानूनी सलाह नहीं है; अंतिम भवन अनुज्ञा निर्णय सक्षम प्राधिकारी / भवन अधिकारी के विवेकाधीन है।"
+      }
+    },
+    {
+      "id": "Q06",
+      "question": "What is the minimum plot size and maximum FAR allowed for a Farm House in an agricultural zone?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "Under Rule 17, for a Farm House in an agricultural zone: Minimum size of the plot is 0.40 hectare, maximum FAR is 0.10, and maximum height of structure is 7.5 meters with sloping roof.",
+        "rule_number": "17",
+        "citations": [
+          {
+            "rule_number": "Rule 17(a)",
+            "page_range": "34",
+            "exact_quote": "Minimum size of the plot shall be 0.40 hectare;",
+            "verified": true
+          },
+          {
+            "rule_number": "Rule 17(b)",
+            "page_range": "34",
+            "exact_quote": "Maximum F.A.R. shall be 0.10;",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "building_type": "farm house",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q07",
+      "question": "What is the minimum vertical and horizontal clearance required from a 33000-volt high-voltage electric line to a building?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "Under Rule 52(1) Table (b), for overhead lines (33000.0 volts), the minimum clearance required is 3.7 meters vertically and 1.2 meters horizontally.",
+        "rule_number": "52",
+        "citations": [
+          {
+            "rule_number": "Rule 52(1) Table (b)",
+            "page_range": "69",
+            "exact_quote": "High voltage lines up to and including 33000 volts 3.7 1.2",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q08",
+      "question": "लो और मीडियम वोल्टेज बिजली की लाइन से किसी इमारत की न्यूनतम ऊर्ध्वाधर (vertical) और क्षैतिज (horizontal) दूरी कितनी होनी चाहिए?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "hi",
+        "answer": "Rule 52(1) Table (a) के तहत 440.0 वोल्ट तक की विद्युत लाइन से इमारत की न्यूनतम दूरी 2.5 मीटर ऊर्ध्वाधर (vertical) और 1.2 मीटर क्षैतिज (horizontal) होनी चाहिए।",
+        "rule_number": "52",
+        "citations": [
+          {
+            "rule_number": "Rule 52(1) Table (a)",
+            "page_range": "69",
+            "exact_quote": "Low and Medium voltage lines and service lines 2.5 1.2",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "voltage_volts": 440.0,
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "अस्वीकरण: यह सहायक केवल संदर्भ और आधिकारिक नियमों के उद्धरण प्रदान करता है। यह औपचारिक कानूनी सलाह नहीं है; अंतिम भवन अनुज्ञा निर्णय सक्षम प्राधिकारी / भवन अधिकारी के विवेकाधीन है।"
+      }
+    },
+    {
+      "id": "Q09",
+      "question": "What is the permission fee for a residential building with a proposed built-up area of 180 sq meters?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "Under Rule 21(3)(b) Item 1, for a proposed built-up area of 180.0 sq m (residential), the permission fee is Rs. 2000 (application fee: Rs. 180.0, total fee: Rs. 2180.0).",
+        "rule_number": "21",
+        "citations": [
+          {
+            "rule_number": "Rule 21(3)(b) Item 1",
+            "page_range": "36",
+            "exact_quote": "126 200 2,000",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "builtup_area_sqm": 180.0,
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": "IMPORTANT NOTICE: Rule 2(5)(c) regarding plots up to 500 sq m was amended by the State Government on 28 August 2026. This amendment is not included in the consolidated March 2025 rulebook. Please confirm specific provisions from the 28 Aug 2026 notification before making a final determination.",
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q10",
+      "question": "250 वर्ग मीटर बिल्ट-अप एरिया की दुकान/वाणिज्यिक भवन के लिए अनुमति शुल्क (permission fee) कितना देय होगा?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "hi",
+        "answer": "Rule 21(3)(b) Item 2 के तहत 250.0 वर्ग मीटर बिल्ट-अप एरिया (commercial) के लिए अनुमति शुल्क (permission fee) रु. 4500 देय होगा (आवेदन शुल्क: रु. 250.0)।",
+        "rule_number": "21",
+        "citations": [
+          {
+            "rule_number": "Rule 21(3)(b) Item 2",
+            "page_range": "36",
+            "exact_quote": "Fees as prescribed in item No. 1 together with additional charge of 50% of such amount of fees.",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "builtup_area_sqm": 250.0,
+          "building_type": "commercial",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": "महत्वपूर्ण सूचना: 500 वर्ग मीटर तक के भूखंडों के लिए नियम 2(5)(c) में राज्य सरकार द्वारा 28 अगस्त 2026 को संशोधन किया गया है। यह संशोधन 6 मार्च 2025 तक समेकित नियमावली में शामिल नहीं है। अंतिम निर्णय लेने से पहले 28 अगस्त 2026 की अधिसूचना से पुष्टि अवश्य करें।",
+        "disclaimer": "अस्वीकरण: यह सहायक केवल संदर्भ और आधिकारिक नियमों के उद्धरण प्रदान करता है। यह औपचारिक कानूनी सलाह नहीं है; अंतिम भवन अनुज्ञा निर्णय सक्षम प्राधिकारी / भवन अधिकारी के विवेकाधीन है।"
+      }
+    },
+    {
+      "id": "Q11",
+      "question": "According to MP Bhumi Vikas Rules, what qualifies as a high rise building in terms of storeys or height?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "Under Rule 2(38), a 'high rise building' means a building: (a) which consists of more than ten stories (10 stories); or (b) which has a height of more than 30 meters (30.0 m).",
+        "rule_number": "2(38)",
+        "citations": [
+          {
+            "rule_number": "Rule 2(38)",
+            "page_range": "8",
+            "exact_quote": "which consists of more than ten stories; or (b) which has a height of more than 30 meters;",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "building_type": "high rise",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q12",
+      "question": "Under Rule 24, up to what percentage can deviation from a sanctioned plan be permitted in FAR without violating the rule?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "Under Rule 24(1)(b), no deviation from the sanctioned plan is permissible if the construction involved exceeds 30% of the permissible FAR (30.0%).",
+        "rule_number": "24(1)(b)",
+        "citations": [
+          {
+            "rule_number": "Rule 24(1)(b)",
+            "page_range": "41",
+            "exact_quote": "exceeds 30% of the permissible FAR;",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q13",
+      "question": "कितने वर्ग मीटर तक के आवासीय भूखंडों पर तत्काल या डीम्ड भवन अनुज्ञा (instant/deemed approval) का प्रावधान नियम 12-A में है?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "hi",
+        "answer": "नियम 12-A के तहत अनुमोदित लेआउट में स्थित 186 वर्ग मीटर (186.0 sqm) तक के व्यक्तिगत आवासीय भूखंडों के लिए तत्काल या डीम्ड भवन अनुज्ञा का प्रावधान है।",
+        "rule_number": "12-A",
+        "citations": [
+          {
+            "rule_number": "Rule 12-A",
+            "page_range": "21",
+            "exact_quote": "For residential plots up to 186 sqm], instant/deemed approval shall be issued",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "अस्वीकरण: यह सहायक केवल संदर्भ और आधिकारिक नियमों के उद्धरण प्रदान करता है। यह औपचारिक कानूनी सलाह नहीं है; अंतिम भवन अनुज्ञा निर्णय सक्षम प्राधिकारी / भवन अधिकारी के विवेकाधीन है।"
+      }
+    },
+    {
+      "id": "Q14",
+      "question": "How long does a development permission granted under Section 30 remain valid, and for how long can it be revalidated?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "Under Rule 23(1), development permission remains valid up to 3 years. Under Rule 23(2), it may be revalidated for two (2) consecutive terms of 1 year each.",
+        "rule_number": "23",
+        "citations": [
+          {
+            "rule_number": "Rule 23(1)",
+            "page_range": "41",
+            "exact_quote": "the sanction once accorded shall remain valid up to three years.",
+            "verified": true
+          },
+          {
+            "rule_number": "Rule 23(2)",
+            "page_range": "41",
+            "exact_quote": "Such revalidation may be permitted for two consecutive terms of one year each",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q15",
+      "question": "What is the standard Base Floor Area Ratio (FAR) prescribed for general residential use group in Table 8?",
+      "answerable": true,
+      "passed": true,
+      "notes": [
+        "Rule, exact quotes, and calculated values verified"
+      ],
+      "response": {
+        "found": true,
+        "language": "en",
+        "answer": "Under Rule 61 (Table 8 Item 1), the standard Base Floor Area Ratio (FAR) prescribed for general residential use group is 1.25.",
+        "rule_number": "61",
+        "citations": [
+          {
+            "rule_number": "Rule 61 Table 8 Item 1",
+            "page_range": "83",
+            "exact_quote": "Resdential 1.25",
+            "verified": true
+          }
+        ],
+        "citation_verification": {
+          "all_verified": true,
+          "failures": []
+        },
+        "extracted_numbers": {
+          "building_type": "residential",
+          "development_type": "detached"
+        },
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q16",
+      "question": "What is the quarterly property tax rate per square foot for residential properties in Zone 4 of Bhopal Municipal Corporation?",
+      "answerable": false,
+      "passed": true,
+      "notes": [
+        "Correctly rejected unanswerable query (found=False)"
+      ],
+      "response": {
+        "found": false,
+        "language": "en",
+        "answer": "The rules do not cover this. Please decide / check with the officer. (The Madhya Pradesh Bhumi Vikas Rules, 2012 do not cover municipal utility tariffs or local tax rates.)",
+        "rule_number": null,
+        "citations": [],
+        "extracted_numbers": {},
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+      }
+    },
+    {
+      "id": "Q17",
+      "question": "भोपाल नगर निगम में नए घरेलू नल कनेक्शन के लिए प्रतिमाह जल उपकर (water tariff) और सिक्योरिटी डिपॉजिट कितना लगेगा?",
+      "answerable": false,
+      "passed": true,
+      "notes": [
+        "Correctly rejected unanswerable query (found=False)"
+      ],
+      "response": {
+        "found": false,
+        "language": "hi",
+        "answer": "The rules do not cover this. Please decide / check with the officer. (मध्य प्रदेश भूमि विकास नियम, 2012 इन विषयों को कवर नहीं करते हैं। कृपया सक्षम अधिकारी से संपर्क करें।)",
+        "rule_number": null,
+        "citations": [],
+        "extracted_numbers": {},
+        "calculator_results": null,
+        "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
+        "amendment_warning": null,
+        "disclaimer": "अस्वीकरण: यह सहायक केवल संदर्भ और आधिकारिक नियमों के उद्धरण प्रदान करता है। यह औपचारिक कानूनी सलाह नहीं है; अंतिम भवन अनुज्ञा निर्णय सक्षम प्राधिकारी / भवन अधिकारी के विवेकाधीन है।"
+      }
+    }
+  ]
+}
