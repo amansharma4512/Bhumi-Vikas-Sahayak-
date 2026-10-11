@@ -50,25 +50,22 @@ python -m streamlit run app.py
 
 ---
 
-## 🔐 Authentication & Demo Account Credentials
+## 🔐 Secure Authentication (OTP Only)
 
-The platform features a secure, multi-tier authentication gateway tailored for Bhopal Municipal Corporation:
-* **📱 OTP Verification Login**: Enter any 10-digit mobile number or official email. The system generates a cryptographic 6-digit OTP with simulated SMS/Email gateway delivery. *(Universal evaluation code: `123456`)*
-* **🔑 Evaluator Demo Account**:
-  * **Username / Email**: `demo@bmc.gov.in` (or `clerk_bhopal`)
-  * **Password**: `BhumiSahayak@2026`
-  * **Role**: Senior Building Permission Clerk (Ward 14)
-* **⚡ 1-Click Demo Login**: Click *"🚀 1-Click Instant Demo Login"* on the login screen to enter immediately with full clerk privileges.
+The platform provides a secure, streamlined authentication gateway:
+* **📱 Mobile Number OTP Login**: Enter any 10-digit mobile number to receive a cryptographic 6-digit OTP.
+* **📧 Email Address OTP Login**: Enter official email to receive a 6-digit verification code.
+* **Testing / Evaluation**: System simulates BMC SMS/Email gateway delivery and displays the generated OTP code. (Universal testing code: `123456`).
+* **Zero Demo Backdoors**: All demo accounts and sample passwords have been removed.
 
 ---
 
-## ⚙️ Default Settings & Preferences
+## ⚙️ Automatic Language & Interface Preferences
 
-Users can customize and save their personal settings at setup or anytime in the **Settings Module (Feature 8)**:
-1. **Language Selection**: Choose preferred default interface and answer language between **🇮🇳 Hindi (हिंदी)** and **🇬🇧 English**.
-2. **Theme Selection**: Choose preferred default theme between **☀️ Light Mode (White / Royal Blue)** and **🌙 Dark Mode (Black / Deep Slate)**.
-3. **Save Preferences**: Preferences are saved persistently to `data/user_preferences.json` and automatically restored whenever the user logs in again.
-4. **Quick Toggles**: Switch languages or themes instantly from the sidebar dropdowns at any time.
+* **Automatic Language Switching**: The interface dynamically follows the user's input language. When typing or speaking in Hindi, the entire app renders in Hindi; when typing or speaking in English, it instantly renders in English.
+* **Natural Dark Theme**: Ergonomic, comfortable dark charcoal/slate-grey palette (`#1e2227`) designed for municipal officers and clerks without artificial AI aesthetic.
+* **Minimalist Voice Assistant**: Clean circular microphone interface (Google Assistant / Alexa style) providing answers in both voice audio and written verified text.
+* **Persistent Settings**: User preferences are automatically stored and restored upon next login.
 
 ---
 

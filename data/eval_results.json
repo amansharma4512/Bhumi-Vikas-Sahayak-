@@ -380,8 +380,8 @@
       ],
       "response": {
         "found": true,
-        "language": "en",
-        "answer": "Under Rule 2(38), a 'high rise building' means a building: (a) which consists of more than ten stories (10 stories); or (b) which has a height of more than 30 meters (30.0 m).",
+        "language": "hi",
+        "answer": "नियम 2(38) के अनुसार, 'हाई राइज बिल्डिंग' (high rise) का अर्थ ऐसी इमारत से है: (क) जिसमें 10 से अधिक मंजिलें (more than ten stories) हों; या (ख) जिसकी ऊंचाई 30 मीटर से अधिक (more than 30 meters) हो।",
         "rule_number": "2(38)",
         "citations": [
           {
@@ -402,7 +402,7 @@
         "calculator_results": null,
         "version": "Based on MP Bhumi Vikas Rules 2012, consolidated to 6 March 2025.",
         "amendment_warning": null,
-        "disclaimer": "Disclaimer: This assistant provides official rule citations and calculations for reference. It is not formal legal advice; final building permission determination rests with the competent Municipal Authority / Building Officer."
+        "disclaimer": "अस्वीकरण: यह सहायक केवल संदर्भ और आधिकारिक नियमों के उद्धरण प्रदान करता है। यह औपचारिक कानूनी सलाह नहीं है; अंतिम भवन अनुज्ञा निर्णय सक्षम प्राधिकारी / भवन अधिकारी के विवेकाधीन है।"
       }
     },
     {

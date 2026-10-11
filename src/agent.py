@@ -26,9 +26,17 @@ DISCLAIMER_EN = "Disclaimer: This assistant provides official rule citations and
 DISCLAIMER_HI = "अस्वीकरण: यह सहायक केवल संदर्भ और आधिकारिक नियमों के उद्धरण प्रदान करता है। यह औपचारिक कानूनी सलाह नहीं है; अंतिम भवन अनुज्ञा निर्णय सक्षम प्राधिकारी / भवन अधिकारी के विवेकाधीन है।"
 
 def detect_language(text):
-    """Detect whether query is in Hindi (Devanagari) or English."""
+    """Detect whether query is in Hindi (Devanagari / Hinglish) or English."""
+    if not text:
+        return "hi"
     devanagari_count = len(re.findall(r'[\u0900-\u097F]', text))
-    return "hi" if devanagari_count > 3 else "en"
+    if devanagari_count > 0:
+        return "hi"
+    hinglish_words = {"kya", "kitna", "kitne", "chahiye", "sadak", "samne", "piche", "bagal", "niyam", "bhavan", "bhumi", "shulk", "anugya", "ikkayi", "pratishat", "dokan", "rihaishi"}
+    tokens = set(re.findall(r'[a-zA-Z]+', text.lower()))
+    if len(tokens.intersection(hinglish_words)) >= 1:
+        return "hi"
+    return "en"
 
 def load_amendment_overlay():
     if os.path.exists(AMENDMENT_PATH):

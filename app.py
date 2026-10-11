@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import io
+import base64
 import streamlit as st
 import streamlit.components.v1 as components
 from gtts import gTTS
@@ -12,25 +13,32 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 if PROJECT_DIR not in sys.path:
     sys.path.insert(0, PROJECT_DIR)
 
-from src.agent import answer_question, VERSION_INFO, DISCLAIMER_EN, DISCLAIMER_HI, extract_parameters
+from src.agent import answer_question, VERSION_INFO, DISCLAIMER_EN, DISCLAIMER_HI, extract_parameters, detect_language
 from src.calculators import calculate_comprehensive_building_plan
 from src.checker import check_building_plan
 from src.tracker import get_all_amendments, get_comparison_tables
 from src.auth import (
-    authenticate_password,
     generate_otp,
     verify_otp,
+    validate_destination,
     get_user_preferences,
-    save_user_preferences,
-    DEMO_EMAIL,
-    DEMO_USER_ID,
-    DEMO_PASSWORD_PLAIN
+    save_user_preferences
 )
 from src.theme import get_theme_css, get_strings
 
+LOGO_PATH = os.path.join(PROJECT_DIR, "assets", "logo.jpg")
+
+def get_logo_b64():
+    if os.path.exists(LOGO_PATH):
+        with open(LOGO_PATH, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode("utf-8")
+    return ""
+
+logo_b64 = get_logo_b64()
+
 st.set_page_config(
     page_title="Bhumi Vikas Sahayak | भूमि विकास सहायक",
-    page_icon="🏛️",
+    page_icon=LOGO_PATH if os.path.exists(LOGO_PATH) else "🏛️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -42,155 +50,79 @@ if "auth_user" not in st.session_state:
 if "user_prefs" not in st.session_state:
     st.session_state["user_prefs"] = {
         "language": "hi",
-        "theme": "light",
+        "theme": "dark",
         "auto_voice_playback": True
     }
 
-current_theme = st.session_state["user_prefs"].get("theme", "light")
+current_theme = st.session_state["user_prefs"].get("theme", "dark")
 current_lang = st.session_state["user_prefs"].get("language", "hi")
 strings = get_strings(current_lang)
 
-# Apply dynamic CSS based on Active Theme
+# Apply dynamic CSS based on Natural Dark / Light Theme
 st.markdown(get_theme_css(current_theme), unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# LOGIN PORTAL (Displayed when not logged in)
+# LOGIN PORTAL (Displayed when not logged in - Phone/Email OTP Only)
 # -------------------------------------------------------------
 if not st.session_state.get("auth_user"):
+    # Header with Official Logo
     st.markdown(f"""
-    <div class="main-header" style="text-align: center;">
-        <h1 style="margin:0; font-size: 2.2rem;">🏛️ भोपाल नगर निगम (Bhopal Municipal Corporation)</h1>
-        <h3 style="margin:6px 0 0 0; font-weight: 500; opacity: 0.95;">भवन अनुज्ञा शाखा (Building Permission Directorate)</h3>
-        <p style="margin:6px 0 0 0; opacity: 0.85;">भूमि विकास सहायक — सुरक्षित अधिकृत प्रवेश द्वार (Secure Authentication Gateway)</p>
+    <div style="text-align: center; margin-bottom: 24px;">
+        <img src="data:image/jpeg;base64,{logo_b64}" width="135" style="border-radius: 50%; box-shadow: 0 4px 16px rgba(0,0,0,0.25); margin-bottom: 12px;" />
+        <h1 style="margin:0; font-size: 2.2rem; color: #22c55e;">{strings['app_title']}</h1>
+        <h3 style="margin:4px 0 0 0; font-weight: 500; opacity: 0.9;">मध्य प्रदेश शासन &bull; भोपाल नगर निगम</h3>
+        <p style="margin:4px 0 0 0; opacity: 0.8; font-size: 0.95rem;">{strings['tagline']}</p>
         <div class="version-tag">📌 {VERSION_INFO}</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Demo credentials callout banner
-    st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 18px 22px; margin-bottom: 20px; color: #1e3a8a;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div>
-                <h4 style="margin:0; color:#1d4ed8; font-size: 1.15rem;">🔑 परीक्षक / डेमो खाता (Evaluator Demo Account):</h4>
-                <div style="margin-top: 6px; font-size: 0.95rem;">
-                    <b>ईमेल / यूजरनेम:</b> <code>{DEMO_EMAIL}</code> &nbsp;|&nbsp; 
-                    <b>पासवर्ड:</b> <code>{DEMO_PASSWORD_PLAIN}</code> &nbsp;|&nbsp; 
-                    <b>पद:</b> Senior Building Permission Clerk (Ward 14)
-                </div>
-                <div style="margin-top: 4px; font-size: 0.85rem; color: #2563eb;">
-                    💡 <i>OTP लॉगिन के लिए किसी भी 10-अंकीय फोन नंबर या ईमेल पर कोड मांगें (त्वरित परीक्षण कोड: <code>123456</code>)।</i>
-                </div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # Auth Card with clear choice between Phone and Email
+    st.markdown('<div class="auth-card" style="max-width: 580px; margin: 0 auto;">', unsafe_allow_html=True)
+    st.markdown(f"### 🔐 {strings['otp_title']}")
+    st.caption(strings['login_sub'])
 
-    c_q1, c_q2, c_q3 = st.columns([1, 2, 1])
-    with c_q2:
-        if st.button("🚀 1-Click Instant Demo Login (तुरंत डेमो लॉगिन करें)", type="primary", use_container_width=True):
-            user = authenticate_password(DEMO_EMAIL, DEMO_PASSWORD_PLAIN)
-            if user:
+    login_type = st.radio(
+        strings["choose_method"],
+        [strings["phone_opt"], strings["email_opt"]],
+        horizontal=True,
+        key="login_type_choice"
+    )
+
+    is_phone_login = strings["phone_opt"] in login_type
+
+    if is_phone_login:
+        login_val = st.text_input(strings["enter_phone"], placeholder="उदा. 9876543210", key="phone_input_field")
+    else:
+        login_val = st.text_input(strings["enter_email"], placeholder="उदा. officer@bhopal.gov.in", key="email_input_field")
+
+    if st.button(strings["send_otp"], type="secondary", use_container_width=True):
+        is_valid, norm_val, err_msg = validate_destination("phone" if is_phone_login else "email", login_val)
+        if is_valid:
+            otp, msg = generate_otp(norm_val, "phone" if is_phone_login else "email")
+            st.session_state["active_dest"] = norm_val
+            st.session_state["last_otp"] = otp
+            st.session_state["otp_sent"] = True
+            st.toast("OTP Sent Successfully!")
+        else:
+            st.error(err_msg)
+
+    if st.session_state.get("otp_sent"):
+        st.info(f"📲 **[BMC Gateway Notification]**: सत्यापन कोड (OTP) भेजा गया: `{st.session_state.get('last_otp')}` (परीक्षण हेतु: `123456`)")
+
+        entered_otp = st.text_input(strings["enter_otp"], max_chars=6, key="otp_code_field")
+
+        if st.button(strings["verify_login"], type="primary", use_container_width=True):
+            dest = st.session_state.get("active_dest", login_val.strip())
+            ok, user, msg = verify_otp(dest, entered_otp)
+            if ok:
                 st.session_state["auth_user"] = user
                 st.session_state["user_prefs"] = get_user_preferences(user["user_id"])
-                st.toast("डेमो लॉगिन सफल! प्रवेश किया जा रहा है...")
+                st.toast("लॉगिन सफल!")
                 st.rerun()
+            else:
+                st.error(msg)
 
-    st.markdown("---")
-
-    auth_tab1, auth_tab2, auth_tab3 = st.tabs([
-        "📱 फोन / ईमेल OTP लॉगिन (Phone/Email OTP)",
-        "🔑 डेमो पासवर्ड लॉगिन (Password Login)",
-        "⚙️ प्रवेश पूर्व सेटिंग्स (Initial Setup Preferences)"
-    ])
-
-    with auth_tab1:
-        st.markdown("#### 📱 OTP आधारित सुरक्षित लॉगिन (OTP Verification):")
-        st.caption("अपने 10-अंकीय मोबाइल नंबर या आधिकारिक ईमेल पते से लॉगिन करें।")
-
-        dest_col, send_col = st.columns([3, 1])
-        with dest_col:
-            login_dest = st.text_input(
-                "मोबाइल नंबर या ईमेल पता दर्ज करें (Mobile / Email):",
-                placeholder="उदा. 9876543210 या clerk@bhopal.gov.in",
-                key="login_dest_input"
-            )
-        with send_col:
-            st.write("&nbsp;")
-            if st.button("📩 OTP भेजें (Send OTP)", use_container_width=True):
-                if login_dest.strip():
-                    otp, msg = generate_otp(login_dest.strip())
-                    st.session_state["active_otp_dest"] = login_dest.strip()
-                    st.session_state["last_sent_otp"] = otp
-                    st.session_state["otp_sent"] = True
-                    st.toast("OTP सफलता से भेजा गया!")
-                else:
-                    st.error("कृपया वैध फोन नंबर या ईमेल पता दर्ज करें!")
-
-        if st.session_state.get("otp_sent"):
-            st.info(f"📲 **[BMC SMS/Email Gateway Notification]**: सत्यापन कोड (OTP) भेजा गया: `{st.session_state.get('last_sent_otp')}` (त्वरित परीक्षण कोड: `123456`)")
-
-            c_otp, c_verify = st.columns([2, 2])
-            with c_otp:
-                entered_otp = st.text_input("6-अंकीय OTP दर्ज करें (Enter 6-digit OTP):", max_chars=6, key="otp_verify_input")
-            with c_verify:
-                st.write("&nbsp;")
-                if st.button("✅ OTP सत्यापित करें व लॉगिन करें (Verify & Login)", type="primary", use_container_width=True):
-                    dest = st.session_state.get("active_otp_dest", login_dest)
-                    ok, user, msg = verify_otp(dest, entered_otp)
-                    if ok:
-                        st.session_state["auth_user"] = user
-                        st.session_state["user_prefs"] = get_user_preferences(user["user_id"])
-                        st.success(f"{msg} स्वागत है!")
-                        st.rerun()
-                    else:
-                        st.error(msg)
-
-    with auth_tab2:
-        st.markdown("#### 🔑 पासवर्ड आधारित अधिकृत लॉगिन (Officer Password Login):")
-        with st.form("pwd_login_form"):
-            c_u, c_p = st.columns(2)
-            with c_u:
-                username_input = st.text_input("यूजरनेम या ईमेल (Username/Email):", value=DEMO_EMAIL)
-            with c_p:
-                pwd_input = st.text_input("पासवर्ड (Password):", type="password", value=DEMO_PASSWORD_PLAIN)
-
-            submit_pwd = st.form_submit_button("🔐 लॉगिन करें (Sign In)", type="primary", use_container_width=True)
-            if submit_pwd:
-                user = authenticate_password(username_input, pwd_input)
-                if user:
-                    st.session_state["auth_user"] = user
-                    st.session_state["user_prefs"] = get_user_preferences(user["user_id"])
-                    st.success(f"लॉगिन सफल! स्वागत है, {user['name']}!")
-                    st.rerun()
-                else:
-                    st.error("अमान्य यूजरनेम या पासवर्ड! कृपया डेमो क्रेडेंशियल्स का उपयोग करें।")
-
-    with auth_tab3:
-        st.markdown("#### ⚙️ प्रवेश पूर्व सेटिंग्स (Initial Setup Preferences):")
-        st.caption("लॉगिन करने से पहले अपनी पसंदीदा भाषा और थीम का चयन करें:")
-
-        col_setup_lang, col_setup_theme = st.columns(2)
-        with col_setup_lang:
-            setup_lang = st.radio(
-                "डिफ़ॉल्ट भाषा (Default Language):",
-                ["hi", "en"],
-                format_func=lambda x: "🇮🇳 Hindi (हिंदी)" if x == "hi" else "🇬🇧 English",
-                index=0 if st.session_state["user_prefs"]["language"] == "hi" else 1
-            )
-        with col_setup_theme:
-            setup_theme = st.radio(
-                "डिफ़ॉल्ट थीम (Default Theme):",
-                ["light", "dark"],
-                format_func=lambda x: "☀️ Light Mode (श्वेत/White)" if x == "light" else "🌙 Dark Mode (श्याम/Black)",
-                index=0 if st.session_state["user_prefs"]["theme"] == "light" else 1
-            )
-
-        if st.button("💾 प्राथमिकताएं लागू करें (Apply Preferences)"):
-            st.session_state["user_prefs"]["language"] = setup_lang
-            st.session_state["user_prefs"]["theme"] = setup_theme
-            st.success("प्राथमिकताएं लागू हुईं!")
-            st.rerun()
-
+    st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 # -------------------------------------------------------------
@@ -198,74 +130,68 @@ if not st.session_state.get("auth_user"):
 # -------------------------------------------------------------
 current_user = st.session_state["auth_user"]
 
-# App Header with Officer Status Bar
+# App Header with Official App Logo
 st.markdown(f"""
 <div class="main-header">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <div>
-            <h1 style="margin:0; font-size: 2.1rem;">{strings['title']}</h1>
-            <p style="margin:4px 0 0 0; opacity: 0.9; font-size: 1.05rem;">
-                {strings['subtitle']}
-            </p>
-            <div class="version-tag">📌 {VERSION_INFO}</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div style="display:flex; align-items:center; gap:16px;">
+            <img src="data:image/jpeg;base64,{logo_b64}" width="78" style="border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,0.25);" />
+            <div>
+                <h1 style="margin:0; font-size: 2.1rem; line-height:1.2;">{strings['app_title']}</h1>
+                <p style="margin:3px 0 0 0; opacity: 0.9; font-size: 0.98rem;">
+                    {strings['app_subtitle']}
+                </p>
+                <div style="font-size:0.8rem; color:#86efac; margin-top:2px;">{strings['tagline']}</div>
+            </div>
         </div>
-        <div style="text-align:right; background:rgba(255,255,255,0.15); padding:10px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.2);">
-            <div style="font-size:0.85rem; opacity:0.85;">{strings['logged_in_as']}</div>
-            <div style="font-weight:700; font-size:1.05rem;">👤 {current_user.get('name')}</div>
-            <div style="font-size:0.85rem; opacity:0.9;">🏢 {current_user.get('role')}</div>
+        <div style="text-align:right; background:rgba(0,0,0,0.2); padding:10px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.12);">
+            <div style="font-size:0.8rem; opacity:0.85;">{strings['logged_in_as']}</div>
+            <div style="font-weight:700; font-size:1rem;">👤 {current_user.get('identifier', current_user.get('name'))}</div>
+            <div style="font-size:0.75rem; color:#4ade80;">● Online &bull; BMC Ward 14</div>
         </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar with User Profile, Quick Settings, Navigation & Logout
+# Sidebar with Official Logo, Clean Navigation & Minimalist Theme Control
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/city-buildings.png", width=64)
-    st.markdown(f"### 🏢 {current_user.get('organization', 'भोपाल नगर निगम')}")
-
-    # Officer Profile Chip
     st.markdown(f"""
-    <div class="user-badge">
-        <div style="font-weight:700; font-size:0.95rem;">👤 {current_user.get('name')}</div>
-        <div style="font-size:0.8rem; color:#64748b;">{current_user.get('department')}</div>
-        <div style="font-size:0.75rem; color:#0284c7; margin-top:3px;">● Active Session: Verified</div>
+    <div style="text-align:center; padding:10px 0 15px 0;">
+        <img src="data:image/jpeg;base64,{logo_b64}" width="120" style="border-radius:50%; box-shadow:0 2px 10px rgba(0,0,0,0.25); margin-bottom:8px;" />
+        <div style="font-weight:700; font-size:1.05rem; color:#22c55e;">{strings['app_title']}</div>
+        <div style="font-size:0.8rem; color:#94a3b8;">भोपाल नगर निगम</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Quick Theme & Language Toggles in Sidebar
-    st.markdown("#### ⚙️ Quick Preferences")
-    col_sb_lang, col_sb_theme = st.columns(2)
-    with col_sb_lang:
-        sb_lang = st.selectbox(
-            "🌐 भाषा:",
-            ["hi", "en"],
-            format_func=lambda x: "हिंदी" if x == "hi" else "English",
-            index=0 if current_lang == "hi" else 1,
-            key="sb_quick_lang"
-        )
-    with col_sb_theme:
-        sb_theme = st.selectbox(
-            "🎨 थीम:",
-            ["light", "dark"],
-            format_func=lambda x: "☀️ Light" if x == "light" else "🌙 Dark",
-            index=0 if current_theme == "light" else 1,
-            key="sb_quick_theme"
-        )
+    # User Profile Chip
+    st.markdown(f"""
+    <div class="user-badge">
+        <div style="font-weight:600; font-size:0.9rem;">👤 {current_user.get('identifier', current_user.get('name'))}</div>
+        <div style="font-size:0.78rem; color:#94a3b8;">{current_user.get('role')}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Reactive update if sidebar quick toggle changed
-    if sb_lang != current_lang or sb_theme != current_theme:
-        st.session_state["user_prefs"]["language"] = sb_lang
-        st.session_state["user_prefs"]["theme"] = sb_theme
-        save_user_preferences(current_user["user_id"], st.session_state["user_prefs"])
-        st.rerun()
-
-    st.markdown("---")
     st.markdown(f"#### {strings['sidebar_nav']}")
     feature = st.radio(
         strings['sidebar_nav'],
         strings['modules'],
         label_visibility="collapsed"
     )
+
+    st.markdown("---")
+    # Clean Natural Theme Switcher
+    theme_choice = st.radio(
+        strings["theme_toggle"],
+        ["dark", "light"],
+        format_func=lambda x: strings["theme_dark"] if x == "dark" else strings["theme_light"],
+        index=0 if current_theme == "dark" else 1,
+        horizontal=True,
+        key="sb_theme_toggle"
+    )
+    if theme_choice != current_theme:
+        st.session_state["user_prefs"]["theme"] = theme_choice
+        save_user_preferences(current_user["user_id"], st.session_state["user_prefs"])
+        st.rerun()
 
     st.markdown("---")
     if st.button("🚪 " + strings['logout'], use_container_width=True):
@@ -278,7 +204,7 @@ with st.sidebar:
 # FEATURE 1: AI CHATBOT
 # -------------------------------------------------------------
 if feature.startswith("💬"):
-    st.subheader("💬 AI Chatbot for Building Permission Rules")
+    st.subheader(f"💬 {strings['modules'][0]}")
     st.caption("Ask questions in Hindi or English. Get precise answers with exact rule numbers, verified quotes, and automated math.")
 
     # Quick example buttons
@@ -297,27 +223,40 @@ if feature.startswith("💬"):
         if st.button("🇮🇳 नियम 12-A डीम्ड भवन अनुज्ञा"):
             st.session_state["query_input"] = "कितने वर्ग मीटर तक के आवासीय भूखंडों पर तत्काल या डीम्ड भवन अनुज्ञा (instant/deemed approval) का प्रावधान नियम 12-A में है?"
 
-    # Query Input Box with direct mic input
-    col_input, col_mic = st.columns([3, 1])
+    # Query Input Box with Clean Minimalist Mic
+    col_input, col_mic = st.columns([5, 1])
     with col_mic:
-        st.write("**माइक (Speak Directly):**")
+        st.write("&nbsp;")
         chat_spoken = speech_to_text(
-            language="hi-IN",
-            start_prompt="🎤 बोलें (Mic)",
-            stop_prompt="⏹️ रोकें (Stop)",
+            language="hi-IN" if current_lang == "hi" else "en-IN",
+            start_prompt="🎙️",
+            stop_prompt="⏹️",
             just_once=True,
             use_container_width=True,
-            key="chat_mic_speech"
+            key="chat_minimal_mic"
         )
         if chat_spoken and chat_spoken.strip():
             st.session_state["query_input"] = chat_spoken.strip()
 
     with col_input:
         default_q = st.session_state.get("query_input", "")
-        query = st.text_input("Enter your question (प्रश्न दर्ज करें):", value=default_q, placeholder="e.g. My plot is 200 sq m on a 9 m road. How much front gap do I leave?")
+        query = st.text_input(
+            "Enter your question:" if current_lang == "en" else "अपना प्रश्न दर्ज करें:",
+            value=default_q,
+            placeholder=strings["query_placeholder"],
+            key="chat_query_box"
+        )
 
-    if st.button("🔍 Get Verified Answer (उत्तर प्राप्त करें)", type="primary") or query:
+    # Process Query
+    if st.button(strings["get_answer"], type="primary") or query:
         if query.strip():
+            # Automatic Language Switching on Typing
+            det_lang = detect_language(query)
+            if det_lang != current_lang:
+                st.session_state["user_prefs"]["language"] = det_lang
+                save_user_preferences(current_user["user_id"], st.session_state["user_prefs"])
+                st.rerun()
+
             with st.spinner("Retrieving official rules and verifying quotes..."):
                 response = answer_question(query)
 
@@ -336,22 +275,21 @@ if feature.startswith("💬"):
                 st.write(response["answer"])
 
                 # Citation Cards
-                st.markdown("#### 📜 Official Rulebook Citations & Evidence:")
+                st.markdown(f"#### {strings['official_citations']}")
                 if response.get("citations"):
                     for cit in response["citations"]:
                         is_verif = cit.get("verified", False)
-                        verif_badge = '<div class="verified-badge">✓ 100% VERIFIED QUOTE SUBSTRING</div>' if is_verif else '<div class="verified-badge" style="background:#fee2e2; color:#991b1b;">⚠️ PENDING AUDIT</div>'
+                        verif_badge = f'<div class="verified-badge">{strings["verif_badge"]}</div>' if is_verif else '<div class="verified-badge" style="background:#fee2e2; color:#991b1b;">⚠️ PENDING AUDIT</div>'
                         st.markdown(f"""
                         <div class="citation-card">
                             {verif_badge}
-                            <div style="font-weight: 700; color: #1e3a8a; font-size: 1.05rem;">{cit.get('rule_number')} &bull; {cit.get('page_range')}</div>
-                            <blockquote style="margin: 8px 0 0 0; font-style: italic; color: #334155; border-left: 3px solid #94a3b8; padding-left: 10px;">
+                            <div style="font-weight: 700; color: #16a34a; font-size: 1.05rem;">{cit.get('rule_number')} &bull; {cit.get('page_range')}</div>
+                            <blockquote style="margin: 8px 0 0 0; font-style: italic; color: #cbd5e1; border-left: 3px solid #6b7280; padding-left: 10px;">
                                 &ldquo;{cit.get('exact_quote')}&rdquo;
                             </blockquote>
                         </div>
                         """, unsafe_allow_html=True)
 
-                # Show extracted numbers
                 if response.get("extracted_numbers"):
                     with st.expander("🔢 Extracted Parameters (कोड द्वारा निकाले गए आंकड़े)"):
                         st.json(response["extracted_numbers"])
@@ -362,7 +300,7 @@ if feature.startswith("💬"):
             # Legal Disclaimer
             st.markdown(f"""
             <div class="disclaimer-box">
-                {response.get('disclaimer', DISCLAIMER_EN)}
+                {response.get('disclaimer', DISCLAIMER_EN if current_lang == 'en' else DISCLAIMER_HI)}
             </div>
             """, unsafe_allow_html=True)
 
@@ -370,203 +308,174 @@ if feature.startswith("💬"):
 # FEATURE 2: SMART BUILDING CALCULATOR
 # -------------------------------------------------------------
 elif feature.startswith("📐"):
-    st.subheader("📐 Smart Building Calculator (स्मार्ट कैलकुलेटर)")
-    st.caption("Calculate setbacks, permissible FAR, maximum built-up area, and official municipal fees based on MP Bhumi Vikas Rules.")
+    st.subheader(f"📐 {strings['modules'][1]}")
+    st.caption("Calculate Front MOS, Rear MOS, Side MOS, Base FAR, permitted built-up area, and Rule 21 municipal fees purely via verified Python formulas.")
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        plot_area = st.number_input("Plot Area (वर्ग मीटर / sq m):", min_value=10.0, max_value=50000.0, value=200.0, step=10.0)
-        building_type = st.selectbox("Building Type (भवन का प्रकार):", ["residential", "commercial", "farm house", "public/institutional"])
-    with col2:
-        road_width = st.number_input("Front Road Width (सड़क की चौड़ाई - मीटर / m):", min_value=3.0, max_value=100.0, value=9.0, step=0.5)
-        dev_type = st.selectbox("Development Type (विकास का प्रकार):", ["detached", "semi-detached", "row-type"])
-    with col3:
-        proposed_builtup = st.number_input("Proposed Built-up Area (वैकल्पिक निर्माण क्षेत्र):", min_value=0.0, max_value=100000.0, value=round(plot_area * 1.25, 2))
-        prop_height = st.number_input("Proposed Building Height (ऊंचाई - मीटर):", min_value=0.0, max_value=120.0, value=10.0, step=1.0)
+    with st.form("calc_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            plot_area = st.number_input("Plot Area (वर्ग मीटर / sq m):", min_value=10.0, max_value=50000.0, value=200.0, step=10.0)
+            road_width = st.number_input("Road Width / Abutting Street (मीटर / m):", min_value=3.0, max_value=60.0, value=9.0, step=0.5)
+            building_type = st.selectbox("Building Type (भवन का प्रकार):", ["residential", "commercial", "farmhouse"])
 
-    if st.button("🚀 Calculate Norms (गणना करें)", type="primary"):
-        calc = calculate_comprehensive_building_plan(
+        with col2:
+            calc_builtup = st.number_input("Proposed Built-Up Area for Fees (sq m):", min_value=0.0, max_value=100000.0, value=180.0, step=10.0)
+            structure_type = st.selectbox("Structure Layout:", ["detached", "semi_detached", "row"])
+            height_m = st.number_input("Proposed Building Height (meters):", min_value=3.0, max_value=100.0, value=12.0, step=0.5)
+
+        submit_calc = st.form_submit_button("⚡ Calculate Official Norms (गणना करें)", type="primary")
+
+    if submit_calc:
+        res = calculate_comprehensive_building_plan(
             plot_area_sqm=plot_area,
             road_width_m=road_width,
             building_type=building_type,
-            development_type=dev_type,
-            proposed_builtup_sqm=proposed_builtup,
-            proposed_height_m=prop_height
+            builtup_area_sqm=calc_builtup,
+            structure_type=structure_type,
+            height_m=height_m
         )
 
-        st.markdown("### 📊 Calculation Summary:")
+        st.markdown("### 📊 Verified Calculation Results:")
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Front Setback (FMOS)", f"{calc['setbacks']['front_mos_meters']} m")
-        m2.metric("Rear Setback (RMOS)", f"{calc['setbacks']['rear_mos_meters']} m")
-        m3.metric("Side Setback (SMOS)", f"{calc['setbacks']['side_mos_meters']} m")
-        m4.metric("Permissible Base FAR", f"{calc['far']['base_far']}")
+        m1.metric("Front MOS (सामने खुला स्थान)", f"{res['front_mos_m']} m")
+        m2.metric("Rear MOS (पीछे खुला स्थान)", f"{res['rear_mos_m']} m")
+        m3.metric("Side MOS (दोनों तरफ)", f"{res['side_mos_1_m']}m & {res['side_mos_2_m']}m")
+        m4.metric("Base FAR", f"{res['base_far']}")
 
-        f1, f2, f3, f4 = st.columns(4)
-        f1.metric("Max Built-up Allowed", f"{calc['far']['max_permissible_builtup_sqm']} sq m")
-        f2.metric("Application Fee", f"₹ {calc['fees']['application_fee']}")
-        f3.metric("Permission Fee", f"₹ {calc['fees']['permission_fee']}")
-        f4.metric("Total Municipal Fee", f"₹ {calc['fees']['total_fee']}")
+        m5, m6, m7 = st.columns(3)
+        m5.metric("Max Built-up Permitted", f"{res['max_permissible_builtup_sqm']} sq m")
+        m6.metric("Rule 21 Permission Fee", f"₹ {res['fee_inr']:,}")
+        m7.metric("High Rise Classification", "Yes (Rule 56)" if res['is_high_rise'] else "No (<15m/18m)")
 
-        st.markdown("#### 🌿 Environmental & Fast-Track Compliances:")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.info(f"🌳 **Tree Plantation**: {calc['environmental']['trees_required']} trees required on site ({calc['environmental']['tree_rule']})")
-        with c2:
-            rwh_status = "Mandatory (अनिवार्य)" if calc['environmental']['rainwater_harvesting_mandatory'] else "Optional"
-            st.info(f"💧 **Rainwater Harvesting**: {rwh_status} ({calc['environmental']['rwh_rule']})")
-        with c3:
-            deemed = "Eligible (पात्र)" if calc['fast_track']['deemed_instant_approval_eligible'] else "Standard Scrutiny Required"
-            st.info(f"⚡ **Rule 12-A Instant Deemed Approval**: {deemed}")
-
-        if calc.get("amendment_warning"):
-            st.warning("⚠️ **Amendment Overlay Alert**: Plots up to 500 sq m are subject to the 28 Aug 2026 amendment. Please verify local body jurisdiction and deemed sanction conditions.")
+        st.markdown("#### 📜 Grounding Rule Citations:")
+        for r_name, r_cit in res["citations"].items():
+            st.info(f"**{r_name.upper()}**: {r_cit}")
 
 # -------------------------------------------------------------
 # FEATURE 3: BUILDING PLAN CHECKER
 # -------------------------------------------------------------
 elif feature.startswith("📋"):
-    st.subheader("📋 Building Plan Checker (योजना पूर्व-परीक्षण)")
-    st.caption("Upload or test proposed architectural parameters before formal submission to prevent plan rejection at Bhopal Municipal Corporation.")
+    st.subheader(f"📋 {strings['modules'][2]}")
+    st.caption("Pre-submission compliance checker: Flags violations of setbacks, heights, FAR, tree planting, and rainwater harvesting.")
 
-    col_p1, col_p2 = st.columns(2)
-    with col_p1:
-        st.markdown("#### 📐 Plot & Site Details:")
-        c_plot = st.number_input("Plot Area (sq m):", value=200.0, step=10.0, key="c_plot")
-        c_road = st.number_input("Road Width (m):", value=9.0, step=0.5, key="c_road")
-        c_btype = st.selectbox("Occupancy:", ["residential", "commercial"], key="c_btype")
-        c_dev = st.selectbox("Layout:", ["detached", "semi-detached", "row-type"], key="c_dev")
-    with col_p2:
-        st.markdown("#### 🏗️ Proposed Plan Details:")
-        p_front = st.number_input("Proposed Front Open Space (m):", value=2.5, step=0.1, help="Try 2.5m on 9m road to see violation (3.0m required)")
-        p_rear = st.number_input("Proposed Rear Open Space (m):", value=2.5, step=0.1)
-        p_side = st.number_input("Proposed Side Open Space (m):", value=3.0, step=0.1)
-        p_built = st.number_input("Proposed Total Built-up Area (sq m):", value=260.0, step=10.0, help="Try 260 sq m on 200 sq m plot to see FAR violation (max 250 sq m)")
+    with st.form("checker_form"):
+        st.markdown("#### 1. Site Specifications")
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            p_area = st.number_input("Plot Area (sq m):", value=250.0, step=10.0)
+            p_road = st.number_input("Road Width (m):", value=12.0, step=0.5)
+        with c2:
+            p_type = st.selectbox("Use Type:", ["residential", "commercial", "farmhouse"])
+            p_layout = st.selectbox("Layout:", ["detached", "semi_detached", "row"])
+        with c3:
+            p_height = st.number_input("Proposed Height (m):", value=12.0, step=0.5)
+            p_floors = st.number_input("Proposed Floors:", value=3, min_value=1, max_value=30)
 
-    if st.button("🔍 Validate Building Plan (योजना की जांच करें)", type="primary"):
-        plan_check = check_building_plan({
-            "plot_area_sqm": c_plot,
-            "road_width_m": c_road,
-            "building_type": c_btype,
-            "development_type": c_dev,
-            "proposed_front_mos_m": p_front,
-            "proposed_rear_mos_m": p_rear,
-            "proposed_side_mos_m": p_side,
-            "proposed_builtup_sqm": p_built
-        })
+        st.markdown("#### 2. Proposed Plan Values (To Verify)")
+        d1, d2, d3, d4 = st.columns(4)
+        with d1:
+            prop_front = st.number_input("Proposed Front MOS (m):", value=4.5, step=0.5)
+        with d2:
+            prop_rear = st.number_input("Proposed Rear MOS (m):", value=3.0, step=0.5)
+        with d3:
+            prop_side1 = st.number_input("Proposed Side 1 MOS (m):", value=2.0, step=0.5)
+            prop_side2 = st.number_input("Proposed Side 2 MOS (m):", value=2.0, step=0.5)
+        with d4:
+            prop_bua = st.number_input("Proposed Total BUA (sq m):", value=300.0, step=10.0)
 
-        if plan_check["is_compliant"]:
-            st.success("### ✅ PLAN STATUS: APPROVED (सभी नियम मानकों के अनुकूल)")
-            st.balloons()
+        check_btn = st.form_submit_button("🔍 Run Full Compliance Audit (योजना जांचें)", type="primary")
+
+    if check_btn:
+        proposed_plan = {
+            "plot_area_sqm": p_area,
+            "road_width_m": p_road,
+            "building_type": p_type,
+            "structure_type": p_layout,
+            "height_m": p_height,
+            "floors": p_floors,
+            "proposed_front_mos_m": prop_front,
+            "proposed_rear_mos_m": prop_rear,
+            "proposed_side_mos_1_m": prop_side1,
+            "proposed_side_mos_2_m": prop_side2,
+            "proposed_builtup_sqm": prop_bua
+        }
+        report = check_building_plan(proposed_plan)
+
+        if report["status"] == "COMPLIANT":
+            st.success(f"### ✅ {report['summary']}")
         else:
-            st.error(f"### ❌ PLAN STATUS: {plan_check['violations_count']} VIOLATION(S) DETECTED (योजना में कमियां पाई गईं)")
+            st.error(f"### ❌ {report['summary']}")
 
-        if plan_check["violations"]:
-            st.markdown("#### ⚠️ Specific Violations Requiring Correction:")
-            for v in plan_check["violations"]:
-                st.error(f"**{v['parameter']}**: Proposed `{v['proposed']}` | Required `{v['required']}` &bull; Deficit: **{v.get('deficit') or v.get('excess')}** ({v['rule']})")
+        col_v1, col_v2 = st.columns(2)
+        with col_v1:
+            st.markdown(f"#### ⚠️ Violations ({report['violations_count']}):")
+            if report["violations"]:
+                for v in report["violations"]:
+                    st.error(f"**{v['rule']}**: {v['issue']}")
+            else:
+                st.info("No violations detected!")
 
-        if plan_check["compliant_checks"]:
-            st.markdown("#### ✅ Compliant Parameters:")
-            for p in plan_check["compliant_checks"]:
-                st.write(f"- **{p['parameter']}**: Proposed `{p['proposed']}` meets requirement `{p['required']}` ({p['rule']})")
+        with col_v2:
+            st.markdown(f"#### ℹ️ Additional Norms ({report['warnings_count']}):")
+            for w in report["warnings"]:
+                st.warning(f"**{w['rule']}**: {w['issue']}")
 
 # -------------------------------------------------------------
 # FEATURE 4: RULE AMENDMENT TRACKER
 # -------------------------------------------------------------
 elif feature.startswith("📢"):
-    st.subheader("📢 Rule Amendment Tracker (संशोधन ट्रैकर)")
-    st.caption("Automatic tracking of Madhya Pradesh Government Gazette notifications, comparing previous rules with new amendments.")
-
-    st.markdown("""
-    <div class="warning-banner">
-        <b>🚨 CRITICAL OVERLAY NOTIFICATION (28 AUG 2026):</b><br>
-        Madhya Pradesh Government Gazette Notification regarding <b>Rule 2(5)(c)</b>: Deemed building permissions now extended for plots up to 500 sq m in developed central areas.
-        <br><a href="https://teamleaseregtech.com/updates/article/59469/government-of-madhya-pradesh-amendment-to-land-development-rules" target="_blank" style="color: #b91c1c; font-weight:700;">View Official Gazette Notification Link &rarr;</a>
-    </div>
-    """, unsafe_allow_html=True)
+    st.subheader(f"📢 {strings['modules'][3]}")
+    st.caption("Official Gazette notifications tracked against MP Bhumi Vikas Rules 2012.")
 
     amendments = get_all_amendments()
     for am in amendments:
-        with st.expander(f"📅 {am['date']} — {am['subject']} ({am['rule_affected']})"):
-            st.markdown(f"**Gazette Reference**: `{am['gazette_ref']}`")
-            st.markdown(f"**Summary**: {am['summary']}")
-            col_old, col_new = st.columns(2)
-            with col_old:
-                st.error(f"**Previous Rule (पुरानी व्यवस्था)**:\n{am['old_provision']}")
-            with col_new:
-                st.success(f"**Amended Rule (नया प्रावधान)**:\n{am['new_provision']}")
+        status_color = "#ef4444" if am.get("warning_level") == "CRITICAL" else "#0284c7"
+        with st.expander(f"📌 {am['title']} ({am['date']})", expanded=True):
+            st.markdown(f"<span style='color:{status_color}; font-weight:700;'>Gazette No: {am['gazette_no']}</span>", unsafe_allow_html=True)
+            st.write(f"**Affected Rules:** {', '.join(am['affected_rules'])}")
+            st.write(f"**Key Changes:** {am['key_changes']}")
             st.markdown(f"[Official Source / Notification Link]({am['source_url']})")
 
 # -------------------------------------------------------------
-# FEATURE 5: VOICE-BASED HINDI ASSISTANT
+# FEATURE 5: VOICE-BASED ASSISTANT (Minimalist Alexa / Google Style)
 # -------------------------------------------------------------
 elif feature.startswith("🎙️"):
-    st.subheader("🎙️ Direct Voice Command Assistant (सीधा आवाज सहायक)")
-    st.caption("माइक बटन दबाकर सीधे बोलें। सिस्टम बिना किसी कॉपी-पेस्ट के आपकी आवाज को सीधे समझकर नियम व उत्तर बोलकर सुनाएगा।")
+    st.subheader(f"🎙️ {strings['voice_title']}")
+    st.caption(strings['voice_sub'])
 
-    # Quick instruction banner
-    st.info("💡 **सीधा माइक निर्देश**: 1. भाषा चुनें ➔ 2. '🔴 माइक चालू करें' दबाएं ➔ 3. अपना प्रश्न बोलें ➔ 4. '⏹️ बोलना समाप्त' दबाएं। सिस्टम सीधे आपकी आवाज से उत्तर और ऑडियो तैयार करेगा!")
-
-    st.markdown("#### 1️⃣ माइक से सीधा बोलें (Speak Directly via Mic):")
-
-    col_vlang, col_vmic = st.columns([1, 2])
-    with col_vlang:
-        speech_lang = st.selectbox(
-            "भाषा चुनें (Language):",
-            ["hi-IN", "en-IN"],
-            format_func=lambda x: "🇮🇳 Hindi (हिंदी/Hinglish)" if x == "hi-IN" else "🇬🇧 English",
-            key="v_speech_lang_select"
-        )
-    with col_vmic:
-        st.write("**माइक कमांड बटन (Click & Speak):**")
+    # Clean centered circular mic interface (Google Assistant / Alexa style)
+    st.markdown('<div class="voice-orb-wrapper">', unsafe_allow_html=True)
+    c_sp1, c_sp2, c_sp3 = st.columns([2, 1, 2])
+    with c_sp2:
         spoken_text = speech_to_text(
-            language=speech_lang,
-            start_prompt="🔴 माइक चालू करें (Click to Speak)",
-            stop_prompt="⏹️ बोलना समाप्त (Stop & Process)",
+            language="hi-IN" if current_lang == "hi" else "en-IN",
+            start_prompt="🎙️ Tap to Speak",
+            stop_prompt="⏹️ Listening... Click to Send",
             just_once=True,
             use_container_width=True,
-            key="direct_voice_assistant_mic"
+            key="alexa_minimal_mic"
         )
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Initialize voice query state
-    if "v_query_input" not in st.session_state:
-        st.session_state["v_query_input"] = ""
-
-    # Detect spoken voice directly
+    # Process spoken question
     if spoken_text and spoken_text.strip():
-        st.session_state["v_query_input"] = spoken_text.strip()
-        st.session_state["v_auto_run"] = True
-        st.success(f"🎙️ **आवाज पहचानी गई (Recognized Voice)**: \"{spoken_text.strip()}\"")
+        st.session_state["v_active_query"] = spoken_text.strip()
+        st.session_state["v_should_compute"] = True
+        
+        # Automatic language switching on voice
+        detected_lang = detect_language(spoken_text)
+        if detected_lang != current_lang:
+            st.session_state["user_prefs"]["language"] = detected_lang
+            save_user_preferences(current_user["user_id"], st.session_state["user_prefs"])
+            st.rerun()
 
-    # Quick sample voice buttons
-    st.markdown("#### 2️⃣ या उदाहरण प्रश्न चुनें (Or Pick a Sample):")
-    col_v1, col_v2, col_v3 = st.columns(3)
-    with col_v1:
-        if st.button("🗣️ 15m सड़क पर 300 वर्ग मीटर", key="v_sample_btn1"):
-            st.session_state["v_query_input"] = "15 मीटर चौड़ी सड़क पर 300 वर्ग मीटर के आवासीय प्लॉट के लिए सामने कितना खुला स्थान छोड़ना होगा?"
-            st.session_state["v_auto_run"] = True
-    with col_v2:
-        if st.button("🗣️ फार्म हाउस न्यूनतम प्लॉट व FAR", key="v_sample_btn2"):
-            st.session_state["v_query_input"] = "कृषि क्षेत्र में फार्म हाउस के लिए न्यूनतम भूखंड और अधिकतम FAR कितना अनुमत है?"
-            st.session_state["v_auto_run"] = True
-    with col_v3:
-        if st.button("🗣️ 250 sqm दुकान की अनुमति फीस", key="v_sample_btn3"):
-            st.session_state["v_query_input"] = "250 वर्ग मीटर बिल्ट-अप एरिया की दुकान के लिए अनुमति शुल्क कितना देय होगा?"
-            st.session_state["v_auto_run"] = True
+    active_q = st.session_state.get("v_active_query", "")
+    if active_q:
+        st.info(f"🎙️ **{'पूछा गया सवाल (Spoken Query)' if current_lang == 'hi' else 'Spoken Query'}**: \"{active_q}\"")
 
-    # Active command box
-    st.markdown("#### 3️⃣ सक्रिय कमांड (Active Voice Command):")
-    v_query = st.text_input(
-        "कमांड / प्रश्न:",
-        value=st.session_state.get("v_query_input", ""),
-        placeholder="माइक से बोलें या यहाँ टाइप करें..."
-    )
-
-    should_process = st.session_state.pop("v_auto_run", False) or st.button("🔊 Answer & Read Aloud (उत्तर निकालें व सुनें)", type="primary", key="v_process_btn")
-
-    if should_process and v_query.strip():
-        with st.spinner("आधिकारिक नियम खोजे जा रहे हैं और आवाज तैयार हो रही है..."):
-            ans = answer_question(v_query)
+    if st.session_state.pop("v_should_compute", False) and active_q:
+        with st.spinner("उत्तर खोजा जा रहा है..." if current_lang == "hi" else "Searching official rules..."):
+            ans = answer_question(active_q)
             st.session_state["v_last_ans"] = ans
             try:
                 tts_lang = "hi" if ans["language"] == "hi" else "en"
@@ -577,29 +486,29 @@ elif feature.startswith("🎙️"):
             except Exception as e:
                 st.session_state["v_last_audio"] = None
 
-    # Render persisted answer & audio player
+    # Persistent Display: Both Written Text and Voice Playback
     if "v_last_ans" in st.session_state:
         ans = st.session_state["v_last_ans"]
 
-        # Amendment warning banner if triggered
         if ans.get("amendment_warning"):
             st.markdown(f"""
             <div class="warning-banner">
                 ⚠️ <b>AMENDMENT ALERT:</b> {ans['amendment_warning']}
-                <br><a href="https://teamleaseregtech.com/updates/article/59469/government-of-madhya-pradesh-amendment-to-land-development-rules" target="_blank" style="color:#b91c1c; text-decoration: underline;">View Gazette Notification &rarr;</a>
             </div>
             """, unsafe_allow_html=True)
 
-        st.success(f"### 📢 उत्तर (Response):")
-        st.write(ans['answer'])
-
-        # Native Audio player with Hindi playback
+        # 1. Voice Playback (Plays automatically)
         if st.session_state.get("v_last_audio"):
-            st.markdown("#### 🎧 ऑडियो उत्तर (Listen Spoken Audio):")
+            st.markdown(f"#### 🎧 {'ऑडियो उत्तर (Voice Response):' if current_lang == 'hi' else 'Voice Response:'}")
             st.audio(st.session_state["v_last_audio"], format="audio/mp3", autoplay=True)
 
+        # 2. Written Text Output
+        st.success(f"### 📢 {'लिखित उत्तर (Written Answer):' if current_lang == 'hi' else 'Written Answer:'}")
+        st.write(ans['answer'])
+
+        # Verified Citations
         if ans.get("citations"):
-            st.markdown("#### 📜 आधिकारिक नियम व उद्धरण (Verified Citations):")
+            st.markdown(f"#### {strings['official_citations']}")
             for cit in ans["citations"]:
                 st.info(f"**{cit['rule_number']}** ({cit['page_range']}): \"{cit['exact_quote']}\"")
 
@@ -607,7 +516,7 @@ elif feature.startswith("🎙️"):
 # FEATURE 6: RULE COMPARISON DASHBOARD
 # -------------------------------------------------------------
 elif feature.startswith("📊"):
-    st.subheader("📊 Rule Comparison Dashboard (नियम तुलना व तालिकाएं)")
+    st.subheader(f"📊 {strings['modules'][5]}")
     st.caption("Central reference tables for Municipal Officers at Bhopal Municipal Corporation.")
 
     tables = get_comparison_tables()
@@ -625,11 +534,11 @@ elif feature.startswith("📊"):
 # FEATURE 7: AI VERIFICATION SYSTEM
 # -------------------------------------------------------------
 elif feature.startswith("🛡️"):
-    st.subheader("🛡️ AI Answer Verification System & Audit Engine")
+    st.subheader(f"🛡️ {strings['modules'][6]}")
     st.caption("Ensuring zero hallucinations: Every citation must be a verified exact substring of the MP Bhumi Vikas Rules text.")
 
     st.markdown("""
-    <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:16px; border-radius:8px; margin-bottom:16px;">
+    <div style="background:#1e293b; border:1px solid #334155; padding:16px; border-radius:10px; margin-bottom:16px;">
         <b>Verification Contract:</b><br>
         1. <b>Exact Substring Match</b>: The quote must strictly exist in the rule text after whitespace normalization.<br>
         2. <b>Zero Hallucination Tolerance</b>: If an unanswerable question is asked, the system outputs <code>found: false</code>.<br>
@@ -660,40 +569,38 @@ elif feature.startswith("🛡️"):
 # FEATURE 8: USER SETTINGS & PREFERENCES
 # -------------------------------------------------------------
 elif feature.startswith("⚙️"):
-    st.subheader("⚙️ " + ("सेटिंग्स व प्राथमिकताएं (Settings & Preferences)" if current_lang == "hi" else "User Settings & Preferences"))
-    st.caption("Customize your language, theme, and audio playback settings. Preferences are saved and automatically remembered when you log in again.")
+    st.subheader(f"⚙️ {strings['modules'][7]}")
+    st.caption("Customize your language, theme, and audio playback settings. Preferences are automatically saved.")
 
-    user = st.session_state["auth_user"]
     prefs = st.session_state.get("user_prefs", {})
 
     with st.form("settings_pref_form"):
-        st.markdown("#### 1️⃣ " + strings["lang_select"])
+        st.markdown("#### 1️⃣ " + ("पसंदीदा भाषा (Default Language):" if current_lang == "hi" else "Default Language:"))
         p_lang = st.radio(
-            strings["lang_select"],
+            "Language",
             ["hi", "en"],
             format_func=lambda x: "🇮🇳 Hindi (हिंदी) - सभी नियम, प्रश्न व गणनाएं हिंदी में" if x == "hi" else "🇬🇧 English - Standard English Interface",
             index=0 if prefs.get("language", "hi") == "hi" else 1,
-            key="form_lang_choice"
+            label_visibility="collapsed"
         )
 
-        st.markdown("#### 2️⃣ " + strings["theme_select"])
+        st.markdown("#### 2️⃣ " + strings["theme_toggle"])
         p_theme = st.radio(
-            strings["theme_select"],
-            ["light", "dark"],
-            format_func=lambda x: strings["theme_light"] if x == "light" else strings["theme_dark"],
-            index=0 if prefs.get("theme", "light") == "light" else 1,
-            key="form_theme_choice"
+            "Theme",
+            ["dark", "light"],
+            format_func=lambda x: strings["theme_dark"] if x == "dark" else strings["theme_light"],
+            index=0 if prefs.get("theme", "dark") == "dark" else 1,
+            label_visibility="collapsed"
         )
 
         st.markdown("#### 3️⃣ Audio & Voice Assistant Settings")
         p_audio = st.checkbox(
-            strings["auto_audio_label"],
-            value=prefs.get("auto_voice_playback", True),
-            key="form_audio_choice"
+            "आवाज सहायक में उत्तर आने पर स्वतः ऑडियो प्लेबैक चालू रखें (Autoplay voice response)" if current_lang == "hi" else "Autoplay voice response in Voice Assistant",
+            value=prefs.get("auto_voice_playback", True)
         )
 
         st.markdown("---")
-        save_submitted = st.form_submit_button(strings["save_prefs"], type="primary")
+        save_submitted = st.form_submit_button("💾 Save Preferences (प्राथमिकताएं सुरक्षित करें)", type="primary")
 
         if save_submitted:
             updated_prefs = {
@@ -701,25 +608,23 @@ elif feature.startswith("⚙️"):
                 "theme": p_theme,
                 "auto_voice_playback": p_audio
             }
-            save_user_preferences(user["user_id"], updated_prefs)
+            save_user_preferences(current_user["user_id"], updated_prefs)
             st.session_state["user_prefs"] = updated_prefs
-            st.success(strings["prefs_saved"])
+            st.success("✅ प्राथमिकताएं सफलतापूर्वक सुरक्षित कर ली गईं!" if current_lang == "hi" else "✅ Preferences saved successfully!")
             st.rerun()
 
-    st.markdown("#### 👤 " + ("सक्रिय अधिकारी प्रोफाइल (Active Profile)" if current_lang == "hi" else "Active Officer Profile"))
+    st.markdown("#### 👤 " + ("सक्रिय उपयोगकर्ता प्रोफाइल (Active Profile)" if current_lang == "hi" else "Active Officer Profile"))
     col_p1, col_p2 = st.columns(2)
     with col_p1:
         st.info(f"""
-        **नाम (Name):** {user.get('name')}<br>
-        **पद (Role):** {user.get('role')}<br>
-        **शाखा (Department):** {user.get('department')}<br>
-        **संगठन (Org):** {user.get('organization')}
+        **उपयोगकर्ता (User ID):** `{current_user.get('user_id')}`<br>
+        **पहचान (Identifier):** `{current_user.get('identifier')}`<br>
+        **पद (Role):** {current_user.get('role')}<br>
+        **संगठन (Org):** {current_user.get('organization')}
         """)
     with col_p2:
         st.info(f"""
-        **ईमेल (Email):** `{user.get('email', 'N/A')}`<br>
-        **फोन (Phone):** `{user.get('phone', 'N/A')}`<br>
         **सक्रिय थीम (Active Theme):** `{prefs.get('theme')}`<br>
-        **सक्रिय भाषा (Active Language):** `{'Hindi (हिंदी)' if prefs.get('language') == 'hi' else 'English'}`
+        **सक्रिय भाषा (Active Language):** `{'Hindi (हिंदी)' if prefs.get('language') == 'hi' else 'English'}`<br>
+        **ऑडियो ऑटोप्ले (Audio Autoplay):** `{prefs.get('auto_voice_playback')}`
         """)
-
