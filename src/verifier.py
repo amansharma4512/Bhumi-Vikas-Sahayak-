@@ -12,6 +12,7 @@ def normalize_whitespace(text):
 def verify_exact_quote(quote, rule_text):
     """
     Verify whether the quote is a real substring of the rule text after whitespace normalization.
+    Handles intra-word OCR splits (e.g. 'bu ildings') as well as standard whitespace differences.
     """
     if not quote or not rule_text:
         return False, "Quote or rule text is empty"
@@ -22,18 +23,16 @@ def verify_exact_quote(quote, rule_text):
     if len(norm_quote) < 5:
         return False, "Quote too short (less than 5 characters)"
 
+    # Direct normalized substring match
     if norm_quote in norm_rule:
         return True, "Verified exact substring"
 
-    # Fuzzy whitespace / punctuation check (in case OCR had different hyphens or dashes)
-    # Replace em-dashes and hyphens with regular hyphen
-    dash_norm_quote = re.sub(r'[–—\-\.]+', ' ', norm_quote)
-    dash_norm_rule = re.sub(r'[–—\-\.]+', ' ', norm_rule)
-    dash_norm_quote = normalize_whitespace(dash_norm_quote)
-    dash_norm_rule = normalize_whitespace(dash_norm_rule)
+    # Space-insensitive substring match (essential for OCR line wraps and split words like 'bu ildings')
+    quote_compact = re.sub(r'[^a-zA-Z0-9\u0900-\u097F]', '', norm_quote)
+    rule_compact = re.sub(r'[^a-zA-Z0-9\u0900-\u097F]', '', norm_rule)
 
-    if dash_norm_quote in dash_norm_rule:
-        return True, "Verified substring (with punctuation normalization)"
+    if len(quote_compact) >= 5 and quote_compact in rule_compact:
+        return True, "Verified substring (after whitespace and punctuation normalization)"
 
     return False, f"Quote not found in rule text: '{norm_quote[:40]}...'"
 
