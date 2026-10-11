@@ -5,8 +5,15 @@ import io
 import base64
 import streamlit as st
 import streamlit.components.v1 as components
-from gtts import gTTS
-from streamlit_mic_recorder import speech_to_text
+try:
+    from gtts import gTTS
+except ImportError:
+    gTTS = None
+
+try:
+    from streamlit_mic_recorder import speech_to_text
+except ImportError:
+    speech_to_text = None
 
 # Setup path
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -262,16 +269,17 @@ if feature.startswith("💬"):
     col_input, col_mic = st.columns([5, 1])
     with col_mic:
         st.write("&nbsp;")
-        chat_spoken = speech_to_text(
-            language="hi-IN" if current_lang == "hi" else "en-IN",
-            start_prompt="🎙️",
-            stop_prompt="⏹️",
-            just_once=True,
-            use_container_width=True,
-            key="chat_minimal_mic"
-        )
-        if chat_spoken and chat_spoken.strip():
-            st.session_state["query_input"] = chat_spoken.strip()
+        if speech_to_text is not None:
+            chat_spoken = speech_to_text(
+                language="hi-IN" if current_lang == "hi" else "en-IN",
+                start_prompt="🎙️",
+                stop_prompt="⏹️",
+                just_once=True,
+                use_container_width=True,
+                key="chat_minimal_mic"
+            )
+            if chat_spoken and chat_spoken.strip():
+                st.session_state["query_input"] = chat_spoken.strip()
 
     with col_input:
         default_q = st.session_state.get("query_input", "")
@@ -482,14 +490,18 @@ elif feature.startswith("🎙️"):
     st.markdown('<div class="voice-orb-wrapper">', unsafe_allow_html=True)
     c_sp1, c_sp2, c_sp3 = st.columns([2, 1, 2])
     with c_sp2:
-        spoken_text = speech_to_text(
-            language="hi-IN" if current_lang == "hi" else "en-IN",
-            start_prompt="🎙️ Tap to Speak",
-            stop_prompt="⏹️ Listening... Click to Send",
-            just_once=True,
-            use_container_width=True,
-            key="alexa_minimal_mic"
-        )
+        if speech_to_text is not None:
+            spoken_text = speech_to_text(
+                language="hi-IN" if current_lang == "hi" else "en-IN",
+                start_prompt="🎙️ Tap to Speak",
+                stop_prompt="⏹️ Listening... Click to Send",
+                just_once=True,
+                use_container_width=True,
+                key="alexa_minimal_mic"
+            )
+        else:
+            spoken_text = None
+            st.info("🎙️ Voice input module loading...")
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Process spoken question
@@ -512,13 +524,16 @@ elif feature.startswith("🎙️"):
         with st.spinner("उत्तर खोजा जा रहा है..." if current_lang == "hi" else "Searching official rules..."):
             ans = answer_question(active_q)
             st.session_state["v_last_ans"] = ans
-            try:
-                tts_lang = "hi" if ans["language"] == "hi" else "en"
-                tts = gTTS(text=ans['answer'], lang=tts_lang)
-                audio_buffer = io.BytesIO()
-                tts.write_to_fp(audio_buffer)
-                st.session_state["v_last_audio"] = audio_buffer.getvalue()
-            except Exception as e:
+            if gTTS is not None:
+                try:
+                    tts_lang = "hi" if ans["language"] == "hi" else "en"
+                    tts = gTTS(text=ans['answer'], lang=tts_lang)
+                    audio_buffer = io.BytesIO()
+                    tts.write_to_fp(audio_buffer)
+                    st.session_state["v_last_audio"] = audio_buffer.getvalue()
+                except Exception as e:
+                    st.session_state["v_last_audio"] = None
+            else:
                 st.session_state["v_last_audio"] = None
 
     # Persistent Display: Both Written Text and Voice Playback
