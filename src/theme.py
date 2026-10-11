@@ -7,18 +7,16 @@ Provides:
 - Complete bilingual dictionary for automatic language switching (Hindi & English)
 """
 
-def get_theme_css(theme: str = "dark") -> str:
+def get_theme_css(theme: str = "light") -> str:
     """
-    Generate clean, natural, eye-friendly CSS styling.
+    Generate clean, original Government aesthetic CSS styling.
     """
     if theme == "dark":
         return """
         <style>
-            /* Natural, Comfortable Dark Grey Palette (No pitch black) */
             .stApp {
                 background-color: #1e2227 !important;
                 color: #e2e8f0 !important;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
             }
             [data-testid="stSidebar"] {
                 background-color: #242930 !important;
@@ -29,60 +27,57 @@ def get_theme_css(theme: str = "dark") -> str:
                 color: #e2e8f0 !important;
             }
             .main-header {
-                background: linear-gradient(135deg, #1e3a24 0%, #243428 50%, #1e293b 100%) !important;
+                background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%) !important;
                 color: #ffffff !important;
                 padding: 22px 26px;
-                border-radius: 14px;
+                border-radius: 12px;
                 margin-bottom: 20px;
-                border: 1px solid #36423a;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
             }
             .auth-card {
                 background: #262b32 !important;
                 border: 1px solid #3a414d !important;
-                border-radius: 14px;
-                padding: 28px;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+                border-radius: 12px;
+                padding: 24px;
                 color: #e2e8f0 !important;
             }
             .citation-card {
                 background-color: #262b32 !important;
                 border: 1px solid #3a414d !important;
-                border-left: 4px solid #16a34a !important;
+                border-left: 4px solid #0284c7 !important;
                 padding: 14px 18px;
-                border-radius: 10px;
+                border-radius: 8px;
                 margin-top: 10px;
                 color: #e2e8f0 !important;
             }
             .citation-card blockquote {
                 color: #cbd5e1 !important;
-                border-left: 3px solid #4b5563 !important;
+                border-left: 3px solid #64748b !important;
             }
             .warning-banner {
                 background-color: #382424 !important;
                 border-left: 5px solid #ef4444 !important;
                 padding: 14px 18px;
-                border-radius: 10px;
+                border-radius: 8px;
                 color: #fca5a5 !important;
                 margin-bottom: 18px;
                 font-weight: 500;
             }
             .verified-badge {
-                background-color: #143522 !important;
-                color: #86efac !important;
+                background-color: #064e3b !important;
+                color: #6ee7b7 !important;
                 font-size: 0.75rem;
-                font-weight: 600;
-                padding: 3px 10px;
+                font-weight: 700;
+                padding: 2px 8px;
                 border-radius: 9999px;
                 display: inline-block;
                 margin-bottom: 6px;
-                border: 1px solid #1e5631;
             }
             .disclaimer-box {
                 background-color: #242930 !important;
                 border: 1px dashed #404856 !important;
-                padding: 14px;
-                border-radius: 10px;
+                padding: 12px;
+                border-radius: 8px;
                 color: #94a3b8 !important;
                 font-size: 0.85rem;
                 margin-top: 24px;
@@ -90,50 +85,41 @@ def get_theme_css(theme: str = "dark") -> str:
             .user-badge {
                 background-color: #292f38;
                 border: 1px solid #3a424e;
-                padding: 12px 14px;
-                border-radius: 10px;
+                padding: 10px 14px;
+                border-radius: 8px;
                 margin-bottom: 15px;
             }
-            /* Natural Slate/Grey Form Elements */
             input, textarea, select {
                 background-color: #292f38 !important;
                 color: #ffffff !important;
                 border-color: #3e4754 !important;
-                border-radius: 8px !important;
             }
             div[data-baseweb="select"] {
                 background-color: #292f38 !important;
                 color: #ffffff !important;
             }
             div[data-testid="stMetricValue"] {
-                color: #4ade80 !important;
+                color: #38bdf8 !important;
             }
             .version-tag {
-                background-color: #3b2c15 !important;
-                color: #fef08a !important;
+                background-color: #fef08a !important;
+                color: #854d0e !important;
                 padding: 4px 10px;
                 border-radius: 6px;
-                font-size: 0.82rem;
+                font-size: 0.85rem;
                 font-weight: 600;
                 display: inline-block;
                 margin-top: 8px;
-                border: 1px solid #60461f;
-            }
-            /* Clean Minimalist Voice Assistant Styling */
-            .voice-orb-wrapper {
-                text-align: center;
-                padding: 20px 0 10px 0;
             }
         </style>
         """
     else:
         return """
         <style>
-            /* Light Theme Palette */
+            /* Original Clean Light Theme */
             .stApp {
                 background-color: #f8fafc !important;
                 color: #0f172a !important;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
             }
             [data-testid="stSidebar"] {
                 background-color: #ffffff !important;
@@ -141,43 +127,80 @@ def get_theme_css(theme: str = "dark") -> str:
                 border-right: 1px solid #e2e8f0 !important;
             }
             .main-header {
-                background: linear-gradient(135deg, #1e5631 0%, #15803d 50%, #1e3a8a 100%) !important;
+                background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%) !important;
                 color: white !important;
-                padding: 22px 26px;
-                border-radius: 14px;
-                margin-bottom: 20px;
-                box-shadow: 0 4px 14px -1px rgba(0, 0, 0, 0.1);
+                padding: 24px !important;
+                border-radius: 12px !important;
+                margin-bottom: 20px !important;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
             }
-            .auth-card {
-                background: #ffffff !important;
-                border: 1px solid #e2e8f0 !important;
-                border-radius: 14px;
-                padding: 28px;
-                box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            .version-tag {
+                background-color: #fef08a !important;
+                color: #854d0e !important;
+                padding: 4px 10px !important;
+                border-radius: 6px !important;
+                font-size: 0.85rem !important;
+                font-weight: 600 !important;
+                display: inline-block !important;
+                margin-top: 8px !important;
+            }
+            .warning-banner {
+                background-color: #fef2f2 !important;
+                border-left: 5px solid #ef4444 !important;
+                padding: 14px 18px !important;
+                border-radius: 8px !important;
+                color: #991b1b !important;
+                margin-bottom: 18px !important;
+                font-weight: 500 !important;
             }
             .citation-card {
-                background-color: #ffffff !important;
+                background-color: #f8fafc !important;
                 border: 1px solid #e2e8f0 !important;
-                border-left: 4px solid #16a34a !important;
-                padding: 14px 18px;
-                border-radius: 10px;
-                margin-top: 10px;
-                color: #1e293b !important;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+                border-left: 4px solid #0284c7 !important;
+                padding: 14px 18px !important;
+                border-radius: 8px !important;
+                margin-top: 10px !important;
+                color: #0f172a !important;
             }
             .citation-card blockquote {
                 color: #334155 !important;
                 border-left: 3px solid #94a3b8 !important;
             }
-            .warning-banner {
-                background-color: #fef2f2 !important;
-                border-left: 5px solid #ef4444 !important;
-                padding: 14px 18px;
-                border-radius: 10px;
-                color: #991b1b !important;
-                margin-bottom: 18px;
-                font-weight: 500;
+            .verified-badge {
+                background-color: #dcfce7 !important;
+                color: #166534 !important;
+                font-size: 0.75rem !important;
+                font-weight: 700 !important;
+                padding: 2px 8px !important;
+                border-radius: 9999px !important;
+                display: inline-block !important;
+                margin-bottom: 6px !important;
             }
+            .disclaimer-box {
+                background-color: #f1f5f9 !important;
+                border: 1px dashed #cbd5e1 !important;
+                padding: 12px !important;
+                border-radius: 8px !important;
+                color: #475569 !important;
+                font-size: 0.85rem !important;
+                margin-top: 24px !important;
+            }
+            .auth-card {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 12px !important;
+                padding: 24px !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+            }
+            .user-badge {
+                background-color: #f1f5f9;
+                border: 1px solid #e2e8f0;
+                padding: 10px 14px;
+                border-radius: 8px;
+                margin-bottom: 15px;
+            }
+        </style>
+        """
             .verified-badge {
                 background-color: #dcfce7 !important;
                 color: #166534 !important;

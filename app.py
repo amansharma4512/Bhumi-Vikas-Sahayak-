@@ -43,7 +43,7 @@ logo_b64 = get_logo_b64()
 
 st.set_page_config(
     page_title="Bhumi Vikas Sahayak | भूमि विकास सहायक",
-    page_icon=LOGO_PATH if os.path.exists(LOGO_PATH) else "🏛️",
+    page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -55,36 +55,36 @@ if "auth_user" not in st.session_state:
 if "user_prefs" not in st.session_state:
     st.session_state["user_prefs"] = {
         "language": "hi",
-        "theme": "dark",
+        "theme": "light",
         "auto_voice_playback": True
     }
 
-current_theme = st.session_state["user_prefs"].get("theme", "dark")
+current_theme = st.session_state["user_prefs"].get("theme", "light")
 current_lang = st.session_state["user_prefs"].get("language", "hi")
 strings = get_strings(current_lang)
 
-# Apply dynamic CSS based on Natural Dark / Light Theme
+# Apply dynamic CSS based on Original Theme
 st.markdown(get_theme_css(current_theme), unsafe_allow_html=True)
 
 # -------------------------------------------------------------
 # LOGIN PORTAL (Displayed when not logged in)
 # -------------------------------------------------------------
 if not st.session_state.get("auth_user"):
-    # Header with Official Logo
+    # Header with Original Styling
     st.markdown(f"""
-    <div style="text-align: center; margin-bottom: 20px;">
-        <img src="data:image/jpeg;base64,{logo_b64}" width="135" style="border-radius: 50%; box-shadow: 0 4px 16px rgba(0,0,0,0.25); margin-bottom: 12px;" />
-        <h1 style="margin:0; font-size: 2.2rem; color: #22c55e;">{strings['app_title']}</h1>
-        <h3 style="margin:4px 0 0 0; font-weight: 500; opacity: 0.9;">मध्य प्रदेश शासन &bull; भोपाल नगर निगम</h3>
-        <p style="margin:4px 0 0 0; opacity: 0.8; font-size: 0.95rem;">{strings['tagline']}</p>
+    <div style="text-align: center; margin-bottom: 24px;">
+        <img src="https://img.icons8.com/fluency/96/city-buildings.png" width="76" style="margin-bottom: 8px;" />
+        <h1 style="margin:0; font-size: 2.2rem; color: #1e3a8a;">🏛️ {strings['app_title']}</h1>
+        <h3 style="margin:4px 0 0 0; font-weight: 500; opacity: 0.9; color: #334155;">मध्य प्रदेश शासन &bull; भोपाल नगर निगम</h3>
+        <p style="margin:4px 0 0 0; opacity: 0.8; font-size: 0.95rem; color: #64748b;">{strings['tagline']}</p>
         <div class="version-tag">📌 {VERSION_INFO}</div>
     </div>
     """, unsafe_allow_html=True)
 
     # Test Credentials Box
     st.markdown(f"""
-    <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid #16a34a; border-radius: 12px; padding: 14px 20px; max-width: 580px; margin: 0 auto 18px auto;">
-        <div style="font-weight: 700; color: #4ade80; font-size: 1rem; margin-bottom: 4px;">
+    <div style="background: rgba(2, 132, 199, 0.08); border: 1px solid #0284c7; border-radius: 12px; padding: 14px 20px; max-width: 580px; margin: 0 auto 18px auto; color: #0f172a;">
+        <div style="font-weight: 700; color: #0369a1; font-size: 1rem; margin-bottom: 4px;">
             🔑 टेस्ट लॉगिन क्रेडेंशियल्स (Test Credentials):
         </div>
         <div style="font-size: 0.92rem; line-height: 1.6;">
@@ -106,7 +106,7 @@ if not st.session_state.get("auth_user"):
     with login_tab1:
         st.markdown("##### यूजर आईडी और पासवर्ड द्वारा प्रवेश करें:")
         with st.form("pwd_login_box"):
-            login_id_in = st.text_input("यूजर आईडी / ईमेल / फोन:", value=DEFAULT_TEST_ID)
+            login_id_in = st.text_input("यूज़र आईडी / ईमेल / फोन:", value=DEFAULT_TEST_ID)
             login_pwd_in = st.text_input("पासवर्ड (Password):", type="password", value=DEFAULT_TEST_PASSWORD)
             btn_pwd = st.form_submit_button("🔐 लॉगिन करें (Login)", type="primary", use_container_width=True)
 
@@ -170,44 +170,39 @@ if not st.session_state.get("auth_user"):
 # -------------------------------------------------------------
 current_user = st.session_state["auth_user"]
 
-# App Header with Official App Logo
+# App Header with Original Header Styling
 st.markdown(f"""
 <div class="main-header">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-        <div style="display:flex; align-items:center; gap:16px;">
-            <img src="data:image/jpeg;base64,{logo_b64}" width="78" style="border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,0.25);" />
+        <div style="display:flex; align-items:center; gap:14px;">
+            <img src="https://img.icons8.com/fluency/96/city-buildings.png" width="58" />
             <div>
-                <h1 style="margin:0; font-size: 2.1rem; line-height:1.2;">{strings['app_title']}</h1>
-                <p style="margin:3px 0 0 0; opacity: 0.9; font-size: 0.98rem;">
+                <h1 style="margin:0; font-size: 2.1rem; line-height:1.2;">🏛️ {strings['app_title']}</h1>
+                <p style="margin:3px 0 0 0; opacity: 0.95; font-size: 0.98rem;">
                     {strings['app_subtitle']}
                 </p>
-                <div style="font-size:0.8rem; color:#86efac; margin-top:2px;">{strings['tagline']}</div>
+                <div style="font-size:0.8rem; opacity: 0.9; margin-top:2px;">{strings['tagline']}</div>
             </div>
         </div>
-        <div style="text-align:right; background:rgba(0,0,0,0.2); padding:10px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.12);">
+        <div style="text-align:right; background:rgba(255,255,255,0.18); padding:10px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.25);">
             <div style="font-size:0.8rem; opacity:0.85;">{strings['logged_in_as']}</div>
             <div style="font-weight:700; font-size:1rem;">👤 {current_user.get('identifier', current_user.get('name'))}</div>
-            <div style="font-size:0.75rem; color:#4ade80;">● Online &bull; BMC Ward 14</div>
+            <div style="font-size:0.75rem; opacity:0.9;">● Online &bull; BMC Ward 14</div>
         </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar with Official Logo, Clean Navigation & Minimalist Theme Control
+# Sidebar with Original Logo & Clean Navigation
 with st.sidebar:
-    st.markdown(f"""
-    <div style="text-align:center; padding:10px 0 15px 0;">
-        <img src="data:image/jpeg;base64,{logo_b64}" width="120" style="border-radius:50%; box-shadow:0 2px 10px rgba(0,0,0,0.25); margin-bottom:8px;" />
-        <div style="font-weight:700; font-size:1.05rem; color:#22c55e;">{strings['app_title']}</div>
-        <div style="font-size:0.8rem; color:#94a3b8;">भोपाल नगर निगम</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.image("https://img.icons8.com/fluency/96/city-buildings.png", width=72)
+    st.markdown(f"### 🏢 {'Bhopal Municipal Corporation' if current_lang == 'en' else 'भोपाल नगर निगम'}")
 
     # User Profile Chip
     st.markdown(f"""
     <div class="user-badge">
         <div style="font-weight:600; font-size:0.9rem;">👤 {current_user.get('identifier', current_user.get('name'))}</div>
-        <div style="font-size:0.78rem; color:#94a3b8;">{current_user.get('role')}</div>
+        <div style="font-size:0.78rem; color:#64748b;">{current_user.get('role')}</div>
     </div>
     """, unsafe_allow_html=True)
 

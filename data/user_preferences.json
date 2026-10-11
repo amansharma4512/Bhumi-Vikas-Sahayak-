@@ -4,5 +4,11 @@
     "theme": "light",
     "auto_voice_playback": true,
     "updated_at": "2026-10-11T15:48:48.855386"
+  },
+  "usr_clerk_bhopal": {
+    "language": "hi",
+    "theme": "light",
+    "auto_voice_playback": true,
+    "updated_at": "2026-10-11T16:31:12.715100"
   }
 }
