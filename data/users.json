@@ -1,0 +1,14 @@
+{
+  "clerk_bhopal": {
+    "user_id": "clerk_bhopal",
+    "name": "राजेश शर्मा (Rajesh Sharma)",
+    "role": "Senior Building Permission Clerk",
+    "department": "Town Planning & Building Sanction, Ward 14",
+    "organization": "Bhopal Municipal Corporation (भोपाल नगर निगम)",
+    "email": "demo@bmc.gov.in",
+    "phone": "9876543210",
+    "password_hash": "d836c0e8703b5fb8f5d3ba8939966faf9b0630ee0f6bb93f2354008aee756d6d",
+    "salt": "bmc_bhopal_salt_2026",
+    "created_at": "2026-03-01T10:00:00"
+  }
+}

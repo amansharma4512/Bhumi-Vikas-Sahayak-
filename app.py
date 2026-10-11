@@ -16,6 +16,17 @@ from src.agent import answer_question, VERSION_INFO, DISCLAIMER_EN, DISCLAIMER_H
 from src.calculators import calculate_comprehensive_building_plan
 from src.checker import check_building_plan
 from src.tracker import get_all_amendments, get_comparison_tables
+from src.auth import (
+    authenticate_password,
+    generate_otp,
+    verify_otp,
+    get_user_preferences,
+    save_user_preferences,
+    DEMO_EMAIL,
+    DEMO_USER_ID,
+    DEMO_PASSWORD_PLAIN
+)
+from src.theme import get_theme_css, get_strings
 
 st.set_page_config(
     page_title="Bhumi Vikas Sahayak | भूमि विकास सहायक",
@@ -24,97 +35,244 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for high-impact professional aesthetic
-st.markdown("""
-<style>
-    .main-header {
-        background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);
-        color: white;
-        padding: 24px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    .version-tag {
-        background-color: #fef08a;
-        color: #854d0e;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        display: inline-block;
-        margin-top: 8px;
-    }
-    .warning-banner {
-        background-color: #fef2f2;
-        border-left: 5px solid #ef4444;
-        padding: 14px 18px;
-        border-radius: 8px;
-        color: #991b1b;
-        margin-bottom: 18px;
-        font-weight: 500;
-    }
-    .citation-card {
-        background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-left: 4px solid #0284c7;
-        padding: 14px 18px;
-        border-radius: 8px;
-        margin-top: 10px;
-    }
-    .verified-badge {
-        background-color: #dcfce7;
-        color: #166534;
-        font-size: 0.75rem;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 9999px;
-        display: inline-block;
-        margin-bottom: 6px;
-    }
-    .disclaimer-box {
-        background-color: #f1f5f9;
-        border: 1px dashed #cbd5e1;
-        padding: 12px;
-        border-radius: 8px;
-        color: #475569;
-        font-size: 0.85rem;
-        margin-top: 24px;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Initialize Session State
+if "auth_user" not in st.session_state:
+    st.session_state["auth_user"] = None
 
-# App Header
+if "user_prefs" not in st.session_state:
+    st.session_state["user_prefs"] = {
+        "language": "hi",
+        "theme": "light",
+        "auto_voice_playback": True
+    }
+
+current_theme = st.session_state["user_prefs"].get("theme", "light")
+current_lang = st.session_state["user_prefs"].get("language", "hi")
+strings = get_strings(current_lang)
+
+# Apply dynamic CSS based on Active Theme
+st.markdown(get_theme_css(current_theme), unsafe_allow_html=True)
+
+# -------------------------------------------------------------
+# LOGIN PORTAL (Displayed when not logged in)
+# -------------------------------------------------------------
+if not st.session_state.get("auth_user"):
+    st.markdown(f"""
+    <div class="main-header" style="text-align: center;">
+        <h1 style="margin:0; font-size: 2.2rem;">🏛️ भोपाल नगर निगम (Bhopal Municipal Corporation)</h1>
+        <h3 style="margin:6px 0 0 0; font-weight: 500; opacity: 0.95;">भवन अनुज्ञा शाखा (Building Permission Directorate)</h3>
+        <p style="margin:6px 0 0 0; opacity: 0.85;">भूमि विकास सहायक — सुरक्षित अधिकृत प्रवेश द्वार (Secure Authentication Gateway)</p>
+        <div class="version-tag">📌 {VERSION_INFO}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Demo credentials callout banner
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 18px 22px; margin-bottom: 20px; color: #1e3a8a;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h4 style="margin:0; color:#1d4ed8; font-size: 1.15rem;">🔑 परीक्षक / डेमो खाता (Evaluator Demo Account):</h4>
+                <div style="margin-top: 6px; font-size: 0.95rem;">
+                    <b>ईमेल / यूजरनेम:</b> <code>{DEMO_EMAIL}</code> &nbsp;|&nbsp; 
+                    <b>पासवर्ड:</b> <code>{DEMO_PASSWORD_PLAIN}</code> &nbsp;|&nbsp; 
+                    <b>पद:</b> Senior Building Permission Clerk (Ward 14)
+                </div>
+                <div style="margin-top: 4px; font-size: 0.85rem; color: #2563eb;">
+                    💡 <i>OTP लॉगिन के लिए किसी भी 10-अंकीय फोन नंबर या ईमेल पर कोड मांगें (त्वरित परीक्षण कोड: <code>123456</code>)।</i>
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    c_q1, c_q2, c_q3 = st.columns([1, 2, 1])
+    with c_q2:
+        if st.button("🚀 1-Click Instant Demo Login (तुरंत डेमो लॉगिन करें)", type="primary", use_container_width=True):
+            user = authenticate_password(DEMO_EMAIL, DEMO_PASSWORD_PLAIN)
+            if user:
+                st.session_state["auth_user"] = user
+                st.session_state["user_prefs"] = get_user_preferences(user["user_id"])
+                st.toast("डेमो लॉगिन सफल! प्रवेश किया जा रहा है...")
+                st.rerun()
+
+    st.markdown("---")
+
+    auth_tab1, auth_tab2, auth_tab3 = st.tabs([
+        "📱 फोन / ईमेल OTP लॉगिन (Phone/Email OTP)",
+        "🔑 डेमो पासवर्ड लॉगिन (Password Login)",
+        "⚙️ प्रवेश पूर्व सेटिंग्स (Initial Setup Preferences)"
+    ])
+
+    with auth_tab1:
+        st.markdown("#### 📱 OTP आधारित सुरक्षित लॉगिन (OTP Verification):")
+        st.caption("अपने 10-अंकीय मोबाइल नंबर या आधिकारिक ईमेल पते से लॉगिन करें।")
+
+        dest_col, send_col = st.columns([3, 1])
+        with dest_col:
+            login_dest = st.text_input(
+                "मोबाइल नंबर या ईमेल पता दर्ज करें (Mobile / Email):",
+                placeholder="उदा. 9876543210 या clerk@bhopal.gov.in",
+                key="login_dest_input"
+            )
+        with send_col:
+            st.write("&nbsp;")
+            if st.button("📩 OTP भेजें (Send OTP)", use_container_width=True):
+                if login_dest.strip():
+                    otp, msg = generate_otp(login_dest.strip())
+                    st.session_state["active_otp_dest"] = login_dest.strip()
+                    st.session_state["last_sent_otp"] = otp
+                    st.session_state["otp_sent"] = True
+                    st.toast("OTP सफलता से भेजा गया!")
+                else:
+                    st.error("कृपया वैध फोन नंबर या ईमेल पता दर्ज करें!")
+
+        if st.session_state.get("otp_sent"):
+            st.info(f"📲 **[BMC SMS/Email Gateway Notification]**: सत्यापन कोड (OTP) भेजा गया: `{st.session_state.get('last_sent_otp')}` (त्वरित परीक्षण कोड: `123456`)")
+
+            c_otp, c_verify = st.columns([2, 2])
+            with c_otp:
+                entered_otp = st.text_input("6-अंकीय OTP दर्ज करें (Enter 6-digit OTP):", max_chars=6, key="otp_verify_input")
+            with c_verify:
+                st.write("&nbsp;")
+                if st.button("✅ OTP सत्यापित करें व लॉगिन करें (Verify & Login)", type="primary", use_container_width=True):
+                    dest = st.session_state.get("active_otp_dest", login_dest)
+                    ok, user, msg = verify_otp(dest, entered_otp)
+                    if ok:
+                        st.session_state["auth_user"] = user
+                        st.session_state["user_prefs"] = get_user_preferences(user["user_id"])
+                        st.success(f"{msg} स्वागत है!")
+                        st.rerun()
+                    else:
+                        st.error(msg)
+
+    with auth_tab2:
+        st.markdown("#### 🔑 पासवर्ड आधारित अधिकृत लॉगिन (Officer Password Login):")
+        with st.form("pwd_login_form"):
+            c_u, c_p = st.columns(2)
+            with c_u:
+                username_input = st.text_input("यूजरनेम या ईमेल (Username/Email):", value=DEMO_EMAIL)
+            with c_p:
+                pwd_input = st.text_input("पासवर्ड (Password):", type="password", value=DEMO_PASSWORD_PLAIN)
+
+            submit_pwd = st.form_submit_button("🔐 लॉगिन करें (Sign In)", type="primary", use_container_width=True)
+            if submit_pwd:
+                user = authenticate_password(username_input, pwd_input)
+                if user:
+                    st.session_state["auth_user"] = user
+                    st.session_state["user_prefs"] = get_user_preferences(user["user_id"])
+                    st.success(f"लॉगिन सफल! स्वागत है, {user['name']}!")
+                    st.rerun()
+                else:
+                    st.error("अमान्य यूजरनेम या पासवर्ड! कृपया डेमो क्रेडेंशियल्स का उपयोग करें।")
+
+    with auth_tab3:
+        st.markdown("#### ⚙️ प्रवेश पूर्व सेटिंग्स (Initial Setup Preferences):")
+        st.caption("लॉगिन करने से पहले अपनी पसंदीदा भाषा और थीम का चयन करें:")
+
+        col_setup_lang, col_setup_theme = st.columns(2)
+        with col_setup_lang:
+            setup_lang = st.radio(
+                "डिफ़ॉल्ट भाषा (Default Language):",
+                ["hi", "en"],
+                format_func=lambda x: "🇮🇳 Hindi (हिंदी)" if x == "hi" else "🇬🇧 English",
+                index=0 if st.session_state["user_prefs"]["language"] == "hi" else 1
+            )
+        with col_setup_theme:
+            setup_theme = st.radio(
+                "डिफ़ॉल्ट थीम (Default Theme):",
+                ["light", "dark"],
+                format_func=lambda x: "☀️ Light Mode (श्वेत/White)" if x == "light" else "🌙 Dark Mode (श्याम/Black)",
+                index=0 if st.session_state["user_prefs"]["theme"] == "light" else 1
+            )
+
+        if st.button("💾 प्राथमिकताएं लागू करें (Apply Preferences)"):
+            st.session_state["user_prefs"]["language"] = setup_lang
+            st.session_state["user_prefs"]["theme"] = setup_theme
+            st.success("प्राथमिकताएं लागू हुईं!")
+            st.rerun()
+
+    st.stop()
+
+# -------------------------------------------------------------
+# AUTHENTICATED APP SCREEN
+# -------------------------------------------------------------
+current_user = st.session_state["auth_user"]
+
+# App Header with Officer Status Bar
 st.markdown(f"""
 <div class="main-header">
-    <h1 style="margin:0; font-size: 2.2rem;">🏛️ Bhumi Vikas Sahayak (भूमि विकास सहायक)</h1>
-    <p style="margin:4px 0 0 0; opacity: 0.9; font-size: 1.1rem;">
-        Building Permission AI Assistant & Verification Engine | Bhopal Municipal Corporation
-    </p>
-    <div class="version-tag">📌 {VERSION_INFO}</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+            <h1 style="margin:0; font-size: 2.1rem;">{strings['title']}</h1>
+            <p style="margin:4px 0 0 0; opacity: 0.9; font-size: 1.05rem;">
+                {strings['subtitle']}
+            </p>
+            <div class="version-tag">📌 {VERSION_INFO}</div>
+        </div>
+        <div style="text-align:right; background:rgba(255,255,255,0.15); padding:10px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.2);">
+            <div style="font-size:0.85rem; opacity:0.85;">{strings['logged_in_as']}</div>
+            <div style="font-weight:700; font-size:1.05rem;">👤 {current_user.get('name')}</div>
+            <div style="font-size:0.85rem; opacity:0.9;">🏢 {current_user.get('role')}</div>
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar
+# Sidebar with User Profile, Quick Settings, Navigation & Logout
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/city-buildings.png", width=72)
-    st.title("Navigation & Tools")
+    st.image("https://img.icons8.com/fluency/96/city-buildings.png", width=64)
+    st.markdown(f"### 🏢 {current_user.get('organization', 'भोपाल नगर निगम')}")
+
+    # Officer Profile Chip
+    st.markdown(f"""
+    <div class="user-badge">
+        <div style="font-weight:700; font-size:0.95rem;">👤 {current_user.get('name')}</div>
+        <div style="font-size:0.8rem; color:#64748b;">{current_user.get('department')}</div>
+        <div style="font-size:0.75rem; color:#0284c7; margin-top:3px;">● Active Session: Verified</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Quick Theme & Language Toggles in Sidebar
+    st.markdown("#### ⚙️ Quick Preferences")
+    col_sb_lang, col_sb_theme = st.columns(2)
+    with col_sb_lang:
+        sb_lang = st.selectbox(
+            "🌐 भाषा:",
+            ["hi", "en"],
+            format_func=lambda x: "हिंदी" if x == "hi" else "English",
+            index=0 if current_lang == "hi" else 1,
+            key="sb_quick_lang"
+        )
+    with col_sb_theme:
+        sb_theme = st.selectbox(
+            "🎨 थीम:",
+            ["light", "dark"],
+            format_func=lambda x: "☀️ Light" if x == "light" else "🌙 Dark",
+            index=0 if current_theme == "light" else 1,
+            key="sb_quick_theme"
+        )
+
+    # Reactive update if sidebar quick toggle changed
+    if sb_lang != current_lang or sb_theme != current_theme:
+        st.session_state["user_prefs"]["language"] = sb_lang
+        st.session_state["user_prefs"]["theme"] = sb_theme
+        save_user_preferences(current_user["user_id"], st.session_state["user_prefs"])
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown(f"#### {strings['sidebar_nav']}")
     feature = st.radio(
-        "Select Module:",
-        [
-            "💬 1. AI Chatbot (AI सहायक)",
-            "📐 2. Smart Calculator (स्मार्ट कैलकुलेटर)",
-            "📋 3. Building Plan Checker (योजना परीक्षक)",
-            "📢 4. Amendment Tracker (संशोधन ट्रैकर)",
-            "🎙️ 5. Voice Assistant (आवाज सहायक)",
-            "📊 6. Rule Comparison Dashboard (तुलना डैशबोर्ड)",
-            "🛡️ 7. AI Verification System (सत्यापन प्रणाली)"
-        ]
+        strings['sidebar_nav'],
+        strings['modules'],
+        label_visibility="collapsed"
     )
 
     st.markdown("---")
-    st.markdown("### 🏢 भोपाल नगर निगम (BMC)")
-    st.info("Designed specifically for Building Permission Clerks, Architects, and Citizens of Bhopal.")
+    if st.button("🚪 " + strings['logout'], use_container_width=True):
+        st.session_state["auth_user"] = None
+        st.session_state["otp_sent"] = False
+        st.toast("लॉग आउट सफल!")
+        st.rerun()
 
 # -------------------------------------------------------------
 # FEATURE 1: AI CHATBOT
@@ -497,3 +655,71 @@ elif feature.startswith("🛡️"):
                 st.json(r["response"])
     else:
         st.info("Run `python eval.py` to view full benchmark audit logs.")
+
+# -------------------------------------------------------------
+# FEATURE 8: USER SETTINGS & PREFERENCES
+# -------------------------------------------------------------
+elif feature.startswith("⚙️"):
+    st.subheader("⚙️ " + ("सेटिंग्स व प्राथमिकताएं (Settings & Preferences)" if current_lang == "hi" else "User Settings & Preferences"))
+    st.caption("Customize your language, theme, and audio playback settings. Preferences are saved and automatically remembered when you log in again.")
+
+    user = st.session_state["auth_user"]
+    prefs = st.session_state.get("user_prefs", {})
+
+    with st.form("settings_pref_form"):
+        st.markdown("#### 1️⃣ " + strings["lang_select"])
+        p_lang = st.radio(
+            strings["lang_select"],
+            ["hi", "en"],
+            format_func=lambda x: "🇮🇳 Hindi (हिंदी) - सभी नियम, प्रश्न व गणनाएं हिंदी में" if x == "hi" else "🇬🇧 English - Standard English Interface",
+            index=0 if prefs.get("language", "hi") == "hi" else 1,
+            key="form_lang_choice"
+        )
+
+        st.markdown("#### 2️⃣ " + strings["theme_select"])
+        p_theme = st.radio(
+            strings["theme_select"],
+            ["light", "dark"],
+            format_func=lambda x: strings["theme_light"] if x == "light" else strings["theme_dark"],
+            index=0 if prefs.get("theme", "light") == "light" else 1,
+            key="form_theme_choice"
+        )
+
+        st.markdown("#### 3️⃣ Audio & Voice Assistant Settings")
+        p_audio = st.checkbox(
+            strings["auto_audio_label"],
+            value=prefs.get("auto_voice_playback", True),
+            key="form_audio_choice"
+        )
+
+        st.markdown("---")
+        save_submitted = st.form_submit_button(strings["save_prefs"], type="primary")
+
+        if save_submitted:
+            updated_prefs = {
+                "language": p_lang,
+                "theme": p_theme,
+                "auto_voice_playback": p_audio
+            }
+            save_user_preferences(user["user_id"], updated_prefs)
+            st.session_state["user_prefs"] = updated_prefs
+            st.success(strings["prefs_saved"])
+            st.rerun()
+
+    st.markdown("#### 👤 " + ("सक्रिय अधिकारी प्रोफाइल (Active Profile)" if current_lang == "hi" else "Active Officer Profile"))
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        st.info(f"""
+        **नाम (Name):** {user.get('name')}<br>
+        **पद (Role):** {user.get('role')}<br>
+        **शाखा (Department):** {user.get('department')}<br>
+        **संगठन (Org):** {user.get('organization')}
+        """)
+    with col_p2:
+        st.info(f"""
+        **ईमेल (Email):** `{user.get('email', 'N/A')}`<br>
+        **फोन (Phone):** `{user.get('phone', 'N/A')}`<br>
+        **सक्रिय थीम (Active Theme):** `{prefs.get('theme')}`<br>
+        **सक्रिय भाषा (Active Language):** `{'Hindi (हिंदी)' if prefs.get('language') == 'hi' else 'English'}`
+        """)
+

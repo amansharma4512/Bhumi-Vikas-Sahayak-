@@ -50,6 +50,28 @@ python -m streamlit run app.py
 
 ---
 
+## 🔐 Authentication & Demo Account Credentials
+
+The platform features a secure, multi-tier authentication gateway tailored for Bhopal Municipal Corporation:
+* **📱 OTP Verification Login**: Enter any 10-digit mobile number or official email. The system generates a cryptographic 6-digit OTP with simulated SMS/Email gateway delivery. *(Universal evaluation code: `123456`)*
+* **🔑 Evaluator Demo Account**:
+  * **Username / Email**: `demo@bmc.gov.in` (or `clerk_bhopal`)
+  * **Password**: `BhumiSahayak@2026`
+  * **Role**: Senior Building Permission Clerk (Ward 14)
+* **⚡ 1-Click Demo Login**: Click *"🚀 1-Click Instant Demo Login"* on the login screen to enter immediately with full clerk privileges.
+
+---
+
+## ⚙️ Default Settings & Preferences
+
+Users can customize and save their personal settings at setup or anytime in the **Settings Module (Feature 8)**:
+1. **Language Selection**: Choose preferred default interface and answer language between **🇮🇳 Hindi (हिंदी)** and **🇬🇧 English**.
+2. **Theme Selection**: Choose preferred default theme between **☀️ Light Mode (White / Royal Blue)** and **🌙 Dark Mode (Black / Deep Slate)**.
+3. **Save Preferences**: Preferences are saved persistently to `data/user_preferences.json` and automatically restored whenever the user logs in again.
+4. **Quick Toggles**: Switch languages or themes instantly from the sidebar dropdowns at any time.
+
+---
+
 ## 🧪 Benchmark Evaluation Results (`eval.py`)
 
 The system was evaluated against 17 rigorous test questions in `resources/sample_questions.md`:
@@ -69,13 +91,14 @@ The system was evaluated against 17 rigorous test questions in `resources/sample
 
 | Feature | Description | Best For |
 |---|---|---|
-| **1. AI Chatbot** | Hindi & English rule question answering with exact citations and verified quotes | Instant answers for clerks |
+| **1. AI Chatbot** | Hindi & English rule question answering with exact citations, verified quotes, and direct mic | Instant answers for clerks |
 | **2. Smart Building Calculator** | Calculates Front/Rear/Side MOS, Base FAR, max built-up area, and fees under Rule 21 | Citizens & architects |
 | **3. Building Plan Checker** | Flags setbacks, height, and FAR violations before formal application submission | Preventing rejected plans |
 | **4. Rule Amendment Tracker** | Highlights recent gazettes (2020, 2022, 2024, 2025, 2026 overlay) | Staying updated |
-| **5. Voice-Based Hindi Assistant** | Speak queries in Hindi and listen to spoken answers via Web Speech API | Accessibility |
+| **5. Direct Voice Assistant** | Speak directly via microphone in Hindi/English with direct voice execution and native Hindi audio | Clerks and citizens |
 | **6. Rule Comparison Dashboard** | Comparative tables for setbacks across road widths, fee slabs, and height limits | Municipal officers |
 | **7. AI Answer Verification** | Substring audit engine ensuring no hallucinated quotes reach the user | Audit & Trust |
+| **8. Settings & Preferences** | Language (Hindi/English) & Theme (Light/Dark) customization with persistent session storage | Personalization |
 
 ---
 
